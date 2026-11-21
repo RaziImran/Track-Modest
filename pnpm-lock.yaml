@@ -197,7 +197,11 @@ importers:
         specifier: 5.7.3
         version: 5.7.3
 
-  apps/activity: {}
+  apps/activity:
+    devDependencies:
+      vitest:
+        specifier: 2.1.4
+        version: 2.1.4(@types/node@22.10.0)(supports-color@7.2.0)
 
   apps/bot:
     dependencies:
@@ -207,18 +211,49 @@ importers:
       discord.js:
         specifier: 14.16.3
         version: 14.16.3
+    devDependencies:
+      '@types/node':
+        specifier: 22.10.0
+        version: 22.10.0
+      vitest:
+        specifier: 2.1.4
+        version: 2.1.4(@types/node@22.10.0)(supports-color@7.2.0)
 
-  apps/dashboard: {}
+  apps/dashboard:
+    devDependencies:
+      vitest:
+        specifier: 2.1.4
+        version: 2.1.4(@types/node@22.10.0)(supports-color@7.2.0)
 
-  apps/game-server: {}
+  apps/game-server:
+    devDependencies:
+      vitest:
+        specifier: 2.1.4
+        version: 2.1.4(@types/node@22.10.0)(supports-color@7.2.0)
 
-  apps/voice: {}
+  apps/voice:
+    devDependencies:
+      vitest:
+        specifier: 2.1.4
+        version: 2.1.4(@types/node@22.10.0)(supports-color@7.2.0)
 
-  apps/worker: {}
+  apps/worker:
+    devDependencies:
+      vitest:
+        specifier: 2.1.4
+        version: 2.1.4(@types/node@22.10.0)(supports-color@7.2.0)
 
-  packages/ai: {}
+  packages/ai:
+    devDependencies:
+      vitest:
+        specifier: 2.1.4
+        version: 2.1.4(@types/node@22.10.0)(supports-color@7.2.0)
 
-  packages/cards: {}
+  packages/cards:
+    devDependencies:
+      vitest:
+        specifier: 2.1.4
+        version: 2.1.4(@types/node@22.10.0)(supports-color@7.2.0)
 
   packages/config-engine:
     dependencies:
@@ -249,9 +284,17 @@ importers:
         specifier: 2.1.4
         version: 2.1.4(@types/node@22.10.0)(supports-color@7.2.0)
 
-  packages/game-data: {}
+  packages/game-data:
+    devDependencies:
+      vitest:
+        specifier: 2.1.4
+        version: 2.1.4(@types/node@22.10.0)(supports-color@7.2.0)
 
-  packages/i18n: {}
+  packages/i18n:
+    devDependencies:
+      vitest:
+        specifier: 2.1.4
+        version: 2.1.4(@types/node@22.10.0)(supports-color@7.2.0)
 
   packages/shared:
     dependencies:
@@ -965,9 +1008,6 @@ packages:
 
   '@types/node@22.10.0':
     resolution: {integrity: sha512-XC70cRZVElFHfIUB40FgZOBbgJYFKKMa5nb9lxcwYstFG/Mi+/Y0bGS+rs6Dmhmkpq4pnNiLiuZAbc02YCOnmA==}
-
-  '@types/node@26.6.6':
-    resolution: {integrity: sha512-MzQj+8Kx3XI40OmUAE6Qoh58ZMNstNNMwn2nfd3qWsfe7nDNSqJNzes4njhz6AHwrSHOffSLwXU6yb474Q4aog==}
 
   '@types/pg-pool@2.0.6':
     resolution: {integrity: sha512-TaAUE5rq2VQYxab5Ts7WZhKNmuN78Q6PiFonTDdpbx8a1H0M1vhy3rhiMjl+e2iHmogyMw7jZF4FrE6eJUy5HQ==}
@@ -1729,9 +1769,6 @@ packages:
 
   undici-types@6.20.0:
     resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
-
-  undici-types@8.9.0:
-    resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
   undici@6.19.8:
     resolution: {integrity: sha512-U8uCCl2x9TK3WANvmBavymRzxbfFYG+tAu+fgx3zxQy3qdagQqBLwJVrdyO1TBfUXvfKveMKJZhpvUYoOjM+4g==}
@@ -2496,7 +2533,7 @@ snapshots:
 
   '@types/connect@3.4.36':
     dependencies:
-      '@types/node': 26.6.6
+      '@types/node': 22.10.0
 
   '@types/estree@1.0.10': {}
 
@@ -2504,15 +2541,11 @@ snapshots:
 
   '@types/mysql@2.15.26':
     dependencies:
-      '@types/node': 26.6.6
+      '@types/node': 22.10.0
 
   '@types/node@22.10.0':
     dependencies:
       undici-types: 6.20.0
-
-  '@types/node@26.6.6':
-    dependencies:
-      undici-types: 8.9.0
 
   '@types/pg-pool@2.0.6':
     dependencies:
@@ -2520,7 +2553,7 @@ snapshots:
 
   '@types/pg@8.6.1':
     dependencies:
-      '@types/node': 26.6.6
+      '@types/node': 22.10.0
       pg-protocol: 1.16.1
       pg-types: 2.2.0
 
@@ -2528,7 +2561,7 @@ snapshots:
 
   '@types/ws@8.18.2':
     dependencies:
-      '@types/node': 26.6.6
+      '@types/node': 22.10.0
 
   '@typescript-eslint/eslint-plugin@8.22.0(@typescript-eslint/parser@8.22.0(eslint@9.19.0(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.7.3))(eslint@9.19.0(supports-color@7.2.0))(supports-color@7.2.0)(typescript@5.7.3)':
     dependencies:
@@ -3309,8 +3342,6 @@ snapshots:
   typescript@5.7.3: {}
 
   undici-types@6.20.0: {}
-
-  undici-types@8.9.0: {}
 
   undici@6.19.8: {}
 
