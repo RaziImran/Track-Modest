@@ -9,7 +9,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] CORE-04 Staff levels & hierarchy checks (6.4) â€” 49daee1
 - [x] CORE-05 Component ID encoding & ownership checks (6.5) — 2b0bba0
 - [x] CORE-06 Standard replies, confirm pattern, cooldowns (6.6â€“6.8) — 79b202a
-- [ ] CORE-07 Module enable/disable (6.9)
+- [x] CORE-07 Module enable/disable (6.9) — eb38632
 - [x] CORE-08 Database schema & migrations (7) â€” 5c59423
 - [x] CORE-09 Redis keys & caching (7.3) â€” 5c59423
 - [ ] CORE-10 Worker app with BullMQ & recovery sweeps (3, 10.7)
