@@ -1,0 +1,646 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ───────────────────────────── GUILD & CONFIG ─────────────────────────────
+
+model Guild {
+  id             String   @id                 // Discord guild ID
+  name           String
+  ownerId        String
+  memberCount    Int      @default(0)
+  locale         String   @default("en")
+  joinedAt       DateTime @default(now())    // when the bot joined
+  leftAt         DateTime?                    // bot removed; data kept 30 days then purged
+  premiumTier    Int      @default(0)
+  setupComplete  Boolean  @default(false)
+  config         GuildConfig?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model GuildConfig {
+  guildId          String   @id
+  guild            Guild    @relation(fields: [guildId], references: [id], onDelete: Cascade)
+  sizeTier         SizeTier @default(SMALL)
+  sizeTierLocked   Boolean  @default(false)   // owner manually chose size; don't auto-suggest
+  strictness       Strictness @default(BALANCED)
+  modules          Json     @default("{}")    // { "automod": true, "economy": false, ... }
+  overrides        Json     @default("{}")    // setting-key -> value (custom values, Section 8)
+  channelOverrides Json     @default("{}")    // channelId -> { strictness?, exempt?: string[], settings?: {} }
+  staffRoles       Json     @default("{}")    // { admin: [roleIds], moderator: [...], helper: [...] }
+  logChannels      Json     @default("{}")    // category -> channelId (Section 13)
+  modLogChannelId  String?
+  updatedAt        DateTime @updatedAt
+}
+
+enum SizeTier {
+  TINY
+  SMALL
+  MEDIUM
+  LARGE
+  MASSIVE
+}
+
+enum Strictness {
+  RELAXED
+  BALANCED
+  STRICT
+  LOCKDOWN
+}
+
+model ConfigHistory {            // every config change, for undo (Section 8.7)
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  actorId   String                 // user who changed it ("system" for automatic)
+  source    String                 // "wizard" | "settings" | "dashboard" | "assistant" | "auto"
+  path      String                 // e.g. "overrides.automod.spam.maxMessages"
+  oldValue  Json?
+  newValue  Json?
+  createdAt DateTime @default(now())
+  @@index([guildId, createdAt])
+}
+
+model TemporaryBoost {           // /strictness boost and auto-lockdown
+  id         Int        @id @default(autoincrement())
+  guildId    String
+  strictness Strictness
+  reason     String
+  startedBy  String
+  endsAt     DateTime
+  createdAt  DateTime   @default(now())
+  @@index([guildId, endsAt])
+}
+
+// ───────────────────────────── MEMBERS ─────────────────────────────
+
+model Member {                    // one row per (guild, user) the bot has seen act
+  guildId        String
+  userId         String
+  rep            Int      @default(0)
+  xp             Int      @default(0)
+  level          Int      @default(0)
+  messageCount   Int      @default(0)
+  voiceMinutes   Int      @default(0)
+  cleanSince     DateTime @default(now())   // last moderation penalty time (for clean streak)
+  repFrozen      Boolean  @default(false)
+  birthday       String?                     // "MM-DD" — never store year (privacy)
+  timezone       String?
+  joinedAt       DateTime?
+  firstSeenAt    DateTime @default(now())
+  lastActiveAt   DateTime @default(now())
+  companionOptIn Boolean  @default(false)
+  voiceOptIn     Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  @@id([guildId, userId])
+  @@index([guildId, rep])
+  @@index([guildId, xp])
+}
+
+model UserGlobal {               // data not tied to one guild
+  userId         String   @id
+  locale         String?
+  aiDataConsent  Boolean  @default(false)    // accepted AI privacy notice
+  aiConsentAt    DateTime?
+  blockedFromAI  Boolean  @default(false)    // abuse
+  createdAt      DateTime @default(now())
+}
+
+// ───────────────────────────── MODERATION ─────────────────────────────
+
+model Case {
+  id          Int        @id @default(autoincrement())   // global id
+  guildId     String
+  number      Int                                        // per-guild case number (#1, #2...)
+  type        CaseType
+  targetId    String
+  moderatorId String                                     // bot's own ID for automatic actions
+  reason      String     @default("No reason provided")
+  durationSec Int?                                       // for timeout/tempban/tempmute
+  expiresAt   DateTime?
+  automatic   Boolean    @default(false)
+  ruleKey     String?                                    // automod rule that triggered it
+  evidence    Json?                                      // { messageContent, attachments, links } — truncated
+  points      Int        @default(0)                     // warning points
+  undone      Boolean    @default(false)
+  undoneBy    String?
+  undoneAt    DateTime?
+  logMessageId String?
+  deletedAt   DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  @@unique([guildId, number])
+  @@index([guildId, targetId])
+}
+
+enum CaseType {
+  WARN
+  TIMEOUT
+  UNTIMEOUT
+  KICK
+  BAN
+  UNBAN
+  SOFTBAN
+  TEMPBAN
+  NOTE_ONLY
+  PURGE
+  LOCK
+  UNLOCK
+}
+
+model CaseCounter {              // atomic per-guild counter
+  guildId String @id
+  next    Int    @default(1)
+}
+
+model ModNote {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  targetId  String
+  authorId  String
+  content   String
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+  @@index([guildId, targetId])
+}
+
+model Report {
+  id           Int          @id @default(autoincrement())
+  guildId      String
+  reporterId   String
+  targetId     String
+  channelId    String?
+  messageId    String?
+  messageSnapshot String?   // copied content at report time
+  reason       String
+  status       ReportStatus @default(OPEN)
+  claimedBy    String?
+  resolution   String?
+  queueMessageId String?
+  createdAt    DateTime     @default(now())
+  resolvedAt   DateTime?
+  @@index([guildId, status])
+}
+enum ReportStatus {
+  OPEN
+  CLAIMED
+  RESOLVED_ACTION
+  RESOLVED_NO_ACTION
+}
+
+model Appeal {
+  id         Int          @id @default(autoincrement())
+  guildId    String
+  userId     String
+  caseId     Int
+  answers    Json                 // form answers
+  status     AppealStatus @default(PENDING)
+  reviewerId String?
+  reviewNote String?
+  createdAt  DateTime     @default(now())
+  reviewedAt DateTime?
+  @@index([guildId, status])
+}
+enum AppealStatus {
+  PENDING
+  APPROVED
+  DENIED
+}
+
+model AutomodRule {              // custom rules beyond the built-in profile rules
+  id         Int      @id @default(autoincrement())
+  guildId    String
+  name       String
+  enabled    Boolean  @default(true)
+  shadow     Boolean  @default(false)   // shadow mode: log only (Section 15.4)
+  trigger    Json                       // { type: "regex"|"keywords"|"links"|..., ... }
+  actions    Json                       // [{ type: "delete" }, { type: "timeout", seconds: 600 }]
+  exemptRoles    String[]
+  exemptChannels String[]
+  createdBy  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  @@index([guildId])
+}
+
+model AutomodHit {               // every automod trigger (for stats, simulator, shadow mode)
+  id        BigInt   @id @default(autoincrement())
+  guildId   String
+  userId    String
+  channelId String
+  ruleKey   String
+  action    String
+  shadow    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  @@index([guildId, createdAt])
+}
+
+model VerificationState {
+  guildId       String
+  userId        String
+  method        String               // "button" | "captcha" | "quiz"
+  attempts      Int      @default(0)
+  captchaAnswer String?           // hashed
+  passedAt      DateTime?
+  createdAt     DateTime @default(now())
+  @@id([guildId, userId])
+}
+
+model BanListEntry {             // shared ban network (Section 15.5)
+  id          Int      @id @default(autoincrement())
+  userId      String
+  sourceGuildId String
+  category    String               // "scam" | "raid" | "nsfw-spam" | ...
+  evidence    String
+  confirmedBy Int      @default(1) // number of guilds confirming
+  status      String   @default("active") // active | appealed | removed
+  createdAt   DateTime @default(now())
+  @@index([userId])
+}
+
+// ───────────────────────────── REPUTATION / XP / BADGES ─────────────────────────────
+
+model RepEvent {
+  id        BigInt   @id @default(autoincrement())
+  guildId   String
+  userId    String
+  delta     Int
+  source    String                 // "activity" | "thanks" | "helper" | "streak" | "quest" | "penalty" | "staff"
+  sourceRef String?                // e.g. caseId, giverId
+  createdAt DateTime @default(now())
+  @@index([guildId, userId, createdAt])
+}
+
+model Badge {
+  key         String  @id          // "first_thanks", "helper_50"
+  name        String
+  description String
+  icon        String               // emoji or asset path
+  hidden      Boolean @default(false)
+}
+
+model MemberBadge {
+  guildId  String
+  userId   String
+  badgeKey String
+  earnedAt DateTime @default(now())
+  @@id([guildId, userId, badgeKey])
+}
+
+model LevelRole {
+  guildId String
+  level   Int
+  roleId  String
+  @@id([guildId, level])
+}
+
+// ───────────────────────────── COMMUNITY ─────────────────────────────
+
+model RoleMenu {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  channelId String
+  messageId String?
+  type      String                 // "buttons" | "select" | "reactions"
+  mode      String   @default("toggle") // toggle | unique (pick one) | add-only
+  title     String
+  options   Json                   // [{ roleId, label, emoji, description }]
+  createdAt DateTime @default(now())
+}
+
+model Ticket {
+  id         Int      @id @default(autoincrement())
+  guildId    String
+  number     Int
+  channelId  String   @unique
+  openerId   String
+  category   String
+  claimedBy  String?
+  status     String   @default("open")   // open | closed
+  rating     Int?
+  transcriptUrl String?
+  createdAt  DateTime @default(now())
+  closedAt   DateTime?
+  @@index([guildId, status])
+}
+
+model ModmailThread {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  userId    String
+  threadId  String   @unique
+  status    String   @default("open")
+  anonymousReplies Boolean @default(false)
+  createdAt DateTime @default(now())
+  closedAt  DateTime?
+  @@index([guildId, userId, status])
+}
+
+model Giveaway {
+  id         Int      @id @default(autoincrement())
+  guildId    String
+  channelId  String
+  messageId  String?
+  hostId     String
+  prize      String
+  winnerCount Int
+  requirements Json   @default("{}")  // { roleId?, minLevel?, minRep?, minAccountAgeDays? }
+  entrants   String[]
+  winners    String[]
+  endsAt     DateTime
+  ended      Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+model Poll {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  channelId String
+  messageId String?
+  question  String
+  options   Json                    // [{ label, emoji }]
+  votes     Json     @default("{}") // userId -> optionIndex[]
+  anonymous Boolean  @default(false)
+  multi     Boolean  @default(false)
+  endsAt    DateTime?
+  ended     Boolean  @default(false)
+  createdBy String
+  createdAt DateTime @default(now())
+}
+
+model Suggestion {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  number    Int
+  authorId  String
+  content   String
+  messageId String?
+  up        String[]
+  down      String[]
+  status    String   @default("pending") // pending | accepted | denied | implemented
+  staffNote String?
+  createdAt DateTime @default(now())
+}
+
+model StarboardEntry {
+  guildId            String
+  originalMessageId  String
+  starboardMessageId String
+  stars              Int
+  @@id([guildId, originalMessageId])
+}
+
+model CustomCommand {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  trigger   String                 // name for /c <name>, or text for auto-responder
+  kind      String                 // "command" | "autoresponder"
+  matchMode String   @default("exact") // exact | contains | startsWith | regex
+  response  Json                   // { content?, embed?, reactions?, ephemeral? }
+  allowedRoles String[]
+  cooldownSec Int    @default(5)
+  uses      Int      @default(0)
+  createdBy String
+  createdAt DateTime @default(now())
+  @@unique([guildId, kind, trigger])
+}
+
+model ScheduledMessage {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  channelId String
+  content   Json                   // { content?, embed? }
+  cron      String?                // recurring (cron syntax, guild timezone)
+  runAt     DateTime?              // one-off
+  timezone  String   @default("UTC")
+  enabled   Boolean  @default(true)
+  createdBy String
+  createdAt DateTime @default(now())
+}
+
+model StickyMessage {
+  guildId   String
+  channelId String
+  content   Json
+  lastMessageId String?
+  @@id([guildId, channelId])
+}
+
+model TempVoiceChannel {
+  channelId String   @id
+  guildId   String
+  ownerId   String
+  createdAt DateTime @default(now())
+}
+
+model Feed {
+  id         Int      @id @default(autoincrement())
+  guildId    String
+  type       String               // "twitch" | "youtube" | "rss" | "reddit"
+  source     String               // channel name / url
+  channelId  String               // where to post
+  message    String?              // template
+  pingRoleId String?
+  lastItemId String?
+  createdAt  DateTime @default(now())
+}
+
+model Backup {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  createdBy String
+  data      Json                  // roles, channels, permissions, settings snapshot
+  sizeBytes Int
+  createdAt DateTime @default(now())
+  @@index([guildId, createdAt])
+}
+
+// ───────────────────────────── AI ─────────────────────────────
+
+model CompanionConfig {
+  guildId     String   @id
+  enabled     Boolean  @default(false)
+  name        String   @default("Nova")
+  persona     String   @default("friendly_guide")   // preset key or "custom"
+  customPersona String?                             // owner-written, max 1000 chars
+  channels    String[]                              // channels where Nova replies without mention
+  proactive   Boolean  @default(false)
+  proactiveMaxPerDay Int @default(3)
+  memoryEnabled Boolean @default(true)
+  fileReading Boolean  @default(true)
+  serverKnowledge String? @db.Text                  // rules/FAQ summary, max 8000 chars
+  dailyGuildLimit Int   @default(300)
+  perUserDailyLimit Int @default(30)
+  voiceEnabled Boolean  @default(false)
+  voiceName   String?   // TTS voice preset
+}
+
+model CompanionMemory {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  userId    String
+  fact      String                // max 200 chars, e.g. "Is studying for exams in December"
+  createdAt DateTime @default(now())
+  @@index([guildId, userId])
+}
+
+model CompanionBond {
+  guildId   String
+  userId    String
+  bondXp    Int      @default(0)
+  bondLevel Int      @default(0)
+  streakDays Int     @default(0)
+  lastInteractionDate String?     // "YYYY-MM-DD" in guild timezone
+  @@id([guildId, userId])
+}
+
+model Quest {
+  id        Int      @id @default(autoincrement())
+  guildId   String
+  userId    String
+  date      String                // "YYYY-MM-DD"
+  key       String                // quest template key
+  progress  Int      @default(0)
+  target    Int
+  completed Boolean  @default(false)
+  rewardRep Int
+  rewardCoins BigInt @default(0)
+  @@unique([guildId, userId, date, key])
+}
+
+model AIUsage {
+  id        BigInt   @id @default(autoincrement())
+  guildId   String?
+  userId    String?
+  feature   String                // "chat" | "file" | "voice" | "assistant" | "moderation"
+  model     String
+  inputTokens  Int
+  outputTokens Int
+  audioSeconds Int  @default(0)
+  createdAt DateTime @default(now())
+  @@index([guildId, createdAt])
+}
+
+// ───────────────────────────── ECONOMY & GAMES ─────────────────────────────
+
+model Wallet {
+  guildId   String
+  userId    String
+  coins     BigInt   @default(0)
+  bank      BigInt   @default(0)
+  lastDaily DateTime?
+  lastWeekly DateTime?
+  lastWork  DateTime?
+  dailyStreak Int    @default(0)
+  @@id([guildId, userId])
+  @@index([guildId, coins])
+}
+
+model LedgerEntry {              // every coin movement (Section 25)
+  id        BigInt   @id @default(autoincrement())
+  guildId   String
+  userId    String
+  delta     BigInt
+  balanceAfter BigInt
+  reason    String                // "daily" | "work" | "shop_sale" | "trade" | "admin" | ...
+  ref       String?
+  createdAt DateTime @default(now())
+  @@index([guildId, userId, createdAt])
+}
+
+model InventoryItem {
+  guildId  String
+  userId   String
+  itemKey  String
+  quantity Int
+  @@id([guildId, userId, itemKey])
+}
+
+model ShopkeeperSave {           // idle tycoon (Section 26)
+  guildId      String
+  userId       String
+  theme        String   @default("bakery")
+  goods        Float    @default(0)     // unsold goods
+  buildings    Json     @default("{}")  // key -> count
+  upgrades     String[]
+  lifetimeEarned Float  @default(0)
+  prestigeStars Int     @default(0)
+  lastTickAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  @@id([guildId, userId])
+}
+
+model GameStat {
+  guildId String
+  userId  String
+  game    String                // "trivia" | "tictactoe" | ...
+  wins    Int    @default(0)
+  losses  Int    @default(0)
+  draws   Int    @default(0)
+  best    Int    @default(0)
+  @@id([guildId, userId, game])
+}
+
+model SandboxWorld {             // Hollowdeep (Section 28)
+  id         String   @id @default(cuid())
+  guildId    String
+  ownerId    String?              // null = shared server world
+  name       String
+  seed       BigInt
+  width      Int
+  height     Int
+  worldTime  Int      @default(0) // ticks
+  bossesDefeated String[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  @@index([guildId])
+}
+
+model SandboxChunk {
+  worldId String
+  cx      Int
+  cy      Int
+  data    Bytes                   // compressed tile + wall arrays
+  version Int     @default(1)
+  updatedAt DateTime @updatedAt
+  @@id([worldId, cx, cy])
+}
+
+model SandboxPlayer {
+  worldId   String
+  userId    String
+  x         Float
+  y         Float
+  health    Int
+  maxHealth Int     @default(100)
+  mana      Int     @default(20)
+  inventory Json                  // [{ slot, itemKey, qty }]
+  equipment Json                  // { head, body, legs, accessories[] }
+  spawnX    Float
+  spawnY    Float
+  playMinutes Int   @default(0)
+  @@id([worldId, userId])
+}
+
+// ───────────────────────────── ANALYTICS ─────────────────────────────
+
+model DailyGuildStat {
+  guildId      String
+  date         String            // "YYYY-MM-DD" UTC
+  messages     Int    @default(0)
+  joins        Int    @default(0)
+  leaves       Int    @default(0)
+  activeUsers  Int    @default(0)
+  voiceMinutes Int    @default(0)
+  automodHits  Int    @default(0)
+  modActions   Int    @default(0)
+  hourly       Json   @default("[]") // 24 message counts
+  @@id([guildId, date])
+}

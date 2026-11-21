@@ -12,6 +12,12 @@
     "test": "vitest run",
     "prisma": "prisma"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "@prisma/client": "6.2.1"
+  },
+  "devDependencies": {
+    "prisma": "6.2.1",
+    "vitest": "2.1.4",
+    "@types/node": "22.10.0"
+  }
 }
