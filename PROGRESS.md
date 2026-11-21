@@ -5,7 +5,7 @@ Copy of spec §45. Tick each ID when done, with date & commit hash.
 ### Core platform (CORE)
 - [x] CORE-01 Monorepo, TypeScript strict, lint, CI (4, 35) — 74bfff1
 - [x] CORE-02 Env validation, logging, Sentry (5.4, 6.11, 36.4) — 4cdd5f2
-- [ ] CORE-03 Command registry, interaction router, middleware, error codes (6.2–6.3)
+- [x] CORE-03 Command registry, interaction router, middleware, error codes (6.2–6.3) — 3638e07
 - [ ] CORE-04 Staff levels & hierarchy checks (6.4)
 - [ ] CORE-05 Component ID encoding & ownership checks (6.5)
 - [ ] CORE-06 Standard replies, confirm pattern, cooldowns (6.6–6.8)
