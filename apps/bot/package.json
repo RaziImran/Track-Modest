@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "discord.js": "14.16.3",
-    "@discordjs/rest": "2.4.0"
+    "@discordjs/rest": "2.4.0",
+    "@modest/db": "workspace:*"
   },
   "devDependencies": {
     "vitest": "2.1.4",
