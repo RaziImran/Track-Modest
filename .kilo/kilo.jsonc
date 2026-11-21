@@ -4,7 +4,7 @@
   "subagent_model": "kilo-auto/free",
   "agent": {
     "explore": {
-      "model": "kilo/baidu/ernie-5.5-flash-preview:free",
-    },
-  },
+      "model": "kilo/baidu/ernie-5.5-flash-preview:free"
+    }
+  }
 }
