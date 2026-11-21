@@ -220,7 +220,18 @@ importers:
 
   packages/cards: {}
 
-  packages/config-engine: {}
+  packages/config-engine:
+    dependencies:
+      zod:
+        specifier: 3.24.0
+        version: 3.24.0
+    devDependencies:
+      '@types/node':
+        specifier: 22.10.0
+        version: 22.10.0
+      vitest:
+        specifier: 2.1.4
+        version: 2.1.4(@types/node@22.10.0)(supports-color@7.2.0)
 
   packages/db:
     dependencies:
