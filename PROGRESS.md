@@ -20,7 +20,7 @@ Copy of spec §45. Tick each ID when done, with date & commit hash.
 
 ### Configuration (CFG)
 - [x] CFG-01 Size tiers auto-detect + override (8.2) — db88825
-- [ ] CFG-02 Strictness levels (8.2)
+- [x] CFG-02 Strictness levels (8.2) — db88825
 - [x] CFG-03 Resolver with full base table + size scaling + overrides + channel overrides + trust shift (8.3–8.6) — db88825
 - [ ] CFG-04 Config history & undo (8.7)
 - [ ] CFG-05 Adaptive size suggestions (8.8)
