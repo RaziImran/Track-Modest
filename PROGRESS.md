@@ -10,8 +10,8 @@ Copy of spec §45. Tick each ID when done, with date & commit hash.
 - [ ] CORE-05 Component ID encoding & ownership checks (6.5)
 - [ ] CORE-06 Standard replies, confirm pattern, cooldowns (6.6–6.8)
 - [ ] CORE-07 Module enable/disable (6.9)
-- [ ] CORE-08 Database schema & migrations (7)
-- [ ] CORE-09 Redis keys & caching (7.3)
+- [x] CORE-08 Database schema & migrations (7) — 5c59423
+- [x] CORE-09 Redis keys & caching (7.3) — 5c59423
 - [ ] CORE-10 Worker app with BullMQ & recovery sweeps (3, 10.7)
 - [ ] CORE-11 UI helpers: panels, progress bars, numbers, timestamps, Components V2 (39)
 - [ ] CORE-12 Hub `/menu` with tabs and red-dot indicators (39.5)
