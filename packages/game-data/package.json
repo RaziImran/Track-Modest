@@ -9,8 +9,10 @@
     "dev": "tsc --watch",
     "lint": "eslint data src --no-error-on-unmatched-pattern",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --pass-with-no-tests"
   },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {
+    "vitest": "2.1.4"
+  }
 }
