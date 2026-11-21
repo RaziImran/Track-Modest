@@ -7,8 +7,8 @@ Copy of spec §45. Tick each ID when done, with date & commit hash.
 - [x] CORE-02 Env validation, logging, Sentry (5.4, 6.11, 36.4) — 4cdd5f2
 - [x] CORE-03 Command registry, interaction router, middleware, error codes (6.2–6.3) — 3638e07
 - [x] CORE-04 Staff levels & hierarchy checks (6.4) — 49daee1
-- [ ] CORE-05 Component ID encoding & ownership checks (6.5)
-- [ ] CORE-06 Standard replies, confirm pattern, cooldowns (6.6–6.8)
+- [x] CORE-05 Component ID encoding & ownership checks (6.5) � 2b0bba0
+- [x] CORE-06 Standard replies, confirm pattern, cooldowns (6.6–6.8) � 79b202a
 - [ ] CORE-07 Module enable/disable (6.9)
 - [x] CORE-08 Database schema & migrations (7) — 5c59423
 - [x] CORE-09 Redis keys & caching (7.3) — 5c59423
@@ -22,7 +22,7 @@ Copy of spec §45. Tick each ID when done, with date & commit hash.
 - [x] CFG-01 Size tiers auto-detect + override (8.2) — db88825
 - [x] CFG-02 Strictness levels (8.2) — db88825
 - [x] CFG-03 Resolver with full base table + size scaling + overrides + channel overrides + trust shift (8.3–8.6) — db88825
-- [ ] CFG-04 Config history & undo (8.7)
+- [x] CFG-04 Config history & undo (8.7) � 2832b76
 - [ ] CFG-05 Adaptive size suggestions (8.8)
 - [ ] CFG-06 Strictness recommendations (8.9)
 - [ ] CFG-07 Temporary boost (8.10)
