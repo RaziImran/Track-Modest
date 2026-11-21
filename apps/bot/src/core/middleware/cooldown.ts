@@ -1,11 +1,27 @@
-export async function cooldown(
-  key: string,
+import type { StaffLevel } from "../../../../../packages/shared/src/staff.js";
+import { levelSatisfies } from "../../../../../packages/shared/src/staff.js";
+
+export async function checkCooldown(
+  redis: {
+    set: (k: string, v: string, opts: { NX: string; EX: number }) => Promise<string | null>;
+    ttl: (k: string) => Promise<number>;
+  },
+  command: string,
+  guildId: string,
+  userId: string,
   seconds: number,
-  redis: { set: (k: string, v: string, opts: { NX: string; EX: number }) => Promise<string>; ttl: (k: string) => Promise<number> },
+  staffLevel: StaffLevel,
 ): Promise<void> {
-  const setResult = await redis.set(key, "1", { NX: "NX", EX: seconds });
-  if (setResult !== "OK") {
-    const ttl = await redis.ttl(key);
-    throw new Error(`Cooldown active. Try again in ${ttl}s.`);
+  if (levelSatisfies("moderator", staffLevel)) {
+    return;
   }
+
+  const key = `cd:${command}:${guildId}:${userId}`;
+  const setResult = await redis.set(key, "1", { NX: "NX", EX: seconds });
+  if (setResult === "OK") {
+    return;
+  }
+
+  const ttl = await redis.ttl(key);
+  throw new Error(`Try again in ${ttl}s`);
 }
