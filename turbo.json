@@ -1,0 +1,26 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", "lib/**", ".next/**"],
+      "cache": true
+    },
+    "lint": {
+      "outputs": []
+    },
+    "typecheck": {
+      "outputs": []
+    },
+    "test": {
+      "outputs": []
+    },
+    "dev": {
+      "cache": false
+    },
+    "register-commands": {
+      "outputs": []
+    }
+  },
+  "globalEnv": ["DATABASE_URL", "REDIS_URL", "DISCORD_TOKEN", "GEMINI_API_KEY", "NEXTAUTH_URL", "NEXTAUTH_SECRET", "LOG_LEVEL", "NODE_ENV"]
+}
