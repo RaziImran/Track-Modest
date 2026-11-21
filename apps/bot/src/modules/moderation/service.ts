@@ -26,8 +26,9 @@ export interface ModEscalationStep {
 
 export interface ModerationServiceDeps {
   incrementCaseCounter: (guildId: string) => Promise<number>;
-  createCase: (input: Omit<ModCreateCaseInput, "guildId"> & { caseNumber: number }) => Promise<void>;
-  addRepPoints: (guildId: string, userId: string, delta: number) => Promise<void>;
+  createCase: (input: ModCreateCaseInput & { caseNumber: number }) => Promise<{ id: number; number: number }>;
+  addRepPoints?: (guildId: string, userId: string, delta: number) => Promise<void>;
+  applyRepPenalty: (guildId: string, userId: string, delta: number) => Promise<number>;
   getActiveWarnPoints: (guildId: string, userId: string, expiryDays: number) => Promise<number>;
   getLadderCasesInWindow: (
     guildId: string,
@@ -56,15 +57,20 @@ export class ModerationService {
     moderatorId: string,
     reason: string,
     points: number,
-  ): Promise<ModCaseResult> {
-    return this.createCase({
+  ): Promise<{ caseNumber: number; caseId: number }> {
+    const caseNumber = await this.deps.incrementCaseCounter(guildId);
+    const created = await this.deps.createCase({
       guildId,
       type: "WARN",
       targetId,
       moderatorId,
       reason,
       points,
+      caseNumber,
+      automatic: false,
     });
+    await this.deps.applyRepPenalty(guildId, targetId, -20 * points);
+    return { caseNumber, caseId: created.id };
   }
 
   async checkEscalation(
@@ -86,12 +92,33 @@ export class ModerationService {
         step.points,
         expiryDays,
       );
-      const stepType: ModCaseType = step.action === "KICK" ? "KICK" : step.action === "BAN" ? "BAN" : "TIMEOUT";
-      if (!alreadyApplied.includes(stepType)) {
+      if (!alreadyApplied.includes(step.action)) {
         return step;
       }
     }
     return null;
+  }
+
+  async applyEscalation(
+    guildId: string,
+    targetId: string,
+    moderatorId: string,
+    warnCaseNumber: number,
+    step: ModEscalationStep,
+  ): Promise<{ caseNumber: number; caseId: number } | null> {
+    const created = await this.deps.createCase({
+      guildId,
+      type: step.action,
+      targetId,
+      moderatorId,
+      reason: `Escalation (ladder ${step.points} points) from warn #${warnCaseNumber}`,
+      points: step.points,
+      durationSec: step.durationSec,
+      automatic: true,
+      ruleKey: `ladder:${step.points}`,
+      caseNumber: warnCaseNumber,
+    });
+    return { caseNumber: created.number, caseId: created.id };
   }
 
   static getDefaultLadder(strictness: ModStrictness): ModEscalationStep[] {

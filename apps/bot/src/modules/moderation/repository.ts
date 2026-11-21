@@ -21,8 +21,8 @@ export async function createCase(input: {
   ruleKey?: string;
   points?: number;
   caseNumber: number;
-}): Promise<void> {
-  await prisma.case.create({
+}): Promise<{ id: number; number: number }> {
+  const created = await prisma.case.create({
     data: {
       guildId: input.guildId,
       number: input.caseNumber,
@@ -35,14 +35,29 @@ export async function createCase(input: {
       ruleKey: input.ruleKey,
       points: input.points ?? 0,
     },
+    select: { id: true, number: true },
   });
+  return { id: created.id, number: created.number };
 }
 
-export async function addRepPoints(guildId: string, userId: string, delta: number): Promise<void> {
-  await prisma.member.upsert({
-    where: { guildId_userId: { guildId, userId } },
-    update: { rep: { increment: delta } },
-    create: { guildId, userId, rep: delta },
+export async function applyRepPenalty(
+  guildId: string,
+  userId: string,
+  delta: number,
+): Promise<number> {
+  return prisma.$transaction(async (tx) => {
+    const member = await tx.member.findUnique({
+      where: { guildId_userId: { guildId, userId } },
+      select: { rep: true },
+    });
+    const currentRep = member?.rep ?? 0;
+    const newRep = Math.max(-500, currentRep + delta);
+    await tx.member.upsert({
+      where: { guildId_userId: { guildId, userId } },
+      update: { rep: newRep, cleanSince: new Date() },
+      create: { guildId, userId, rep: newRep, cleanSince: new Date() },
+    });
+    return newRep;
   });
 }
 
@@ -82,4 +97,15 @@ export async function getLadderCasesInWindow(
     select: { type: true },
   });
   return cases.map((c) => c.type as ModCaseType);
+}
+
+export async function setCaseLogMessageId(
+  guildId: string,
+  caseNumber: number,
+  messageId: string,
+): Promise<void> {
+  await prisma.case.updateMany({
+    where: { guildId, number: caseNumber },
+    data: { logMessageId: messageId },
+  });
 }

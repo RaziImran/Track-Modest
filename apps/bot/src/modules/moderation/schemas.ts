@@ -1,37 +1,46 @@
-export interface WarnCommandInput {
-  user: string;
-  reason: string;
-  points: number;
-  silent: boolean;
-}
+import { z } from "zod";
+
+export const WarnCommandInputSchema = z.object({
+  user: z.string().min(1, "User is required"),
+  reason: z.string().min(1, "Reason is required").max(1000, "Reason too long"),
+  points: z.number().int().min(1, "Points must be between 1 and 5").max(5, "Points must be between 1 and 5").default(1),
+  silent: z.boolean().default(false),
+});
+
+export type WarnCommandInput = z.infer<typeof WarnCommandInputSchema>;
 
 export function validateWarnInput(raw: unknown): WarnCommandInput | { error: string } {
-  const r = raw as Record<string, unknown>;
-  if (typeof r["user"] !== "string" || !r["user"]) return { error: "User is required" };
-  if (typeof r["reason"] !== "string" || !r["reason"]) return { error: "Reason is required" };
-  if ((r["reason"] as string).length > 1000) return { error: "Reason too long" };
-  const points = typeof r["points"] === "number" ? r["points"] : 1;
-  if (!Number.isInteger(points) || points < 1 || points > 5) return { error: "Points must be 1-5" };
-  const silent = typeof r["silent"] === "boolean" ? r["silent"] : false;
-  return { user: r["user"] as string, reason: r["reason"] as string, points, silent };
+  const parsed = WarnCommandInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  return parsed.data;
 }
 
-export interface CaseViewInput {
-  number: number;
-}
+export const CaseViewInputSchema = z.object({
+  number: z.coerce.number().int().min(1, "Invalid case number"),
+});
+
+export type CaseViewInput = z.infer<typeof CaseViewInputSchema>;
 
 export function validateCaseView(raw: unknown): CaseViewInput | { error: string } {
-  const n = Number(raw);
-  if (!Number.isInteger(n) || n < 1) return { error: "Invalid case number" };
-  return { number: n };
+  const parsed = CaseViewInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid case number" };
+  }
+  return parsed.data;
 }
 
-export interface CaseUndoInput {
-  number: number;
-}
+export const CaseUndoInputSchema = z.object({
+  number: z.coerce.number().int().min(1, "Invalid case number"),
+});
+
+export type CaseUndoInput = z.infer<typeof CaseUndoInputSchema>;
 
 export function validateCaseUndo(raw: unknown): CaseUndoInput | { error: string } {
-  const n = Number(raw);
-  if (!Number.isInteger(n) || n < 1) return { error: "Invalid case number" };
-  return { number: n };
+  const parsed = CaseUndoInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid case number" };
+  }
+  return parsed.data;
 }

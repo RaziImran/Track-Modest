@@ -1,0 +1,28 @@
+{
+  "logging": {
+    "edit": {
+      "title": "Message Edited",
+      "description": "A message was edited in {channel} ([jump to message]({url}))",
+      "before": "Before",
+      "after": "After",
+      "attachments": "Attachments",
+      "attachmentsChanged": "Before: {before}\nAfter: {after}",
+      "footer": "Message ID: {messageId}"
+    },
+    "delete": {
+      "title": "Message Deleted",
+      "description": "A message was deleted in {channel} ([jump to message]({url}))",
+      "content": "Content",
+      "attachments": "Attachments",
+      "notCached": "Content unavailable (message too old)",
+      "footer": "Message deleted"
+    },
+    "bulkDelete": {
+      "title": "Bulk Message Delete",
+      "description": "{count} messages were deleted in {channel}",
+      "attachmentDesc": "Bulk delete log for {count} messages",
+      "footer": "Bulk delete"
+    },
+    "none": "(none)"
+  }
+}
