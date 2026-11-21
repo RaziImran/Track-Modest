@@ -39,7 +39,7 @@ Copy of spec §45. Tick each ID when done, with date & commit hash.
 - [ ] MOD-07 `/purge` (any/user/bots/links/attachments/contains/regex), 14-day handling (10.1)
 - [ ] MOD-08 `/lock`, `/unlock`, `/lockdown`, `/slowmode`, `/nick` (10.1)
 - [ ] MOD-09 Moderate user & Moderate message context menus with quick panels (10.1)
-- [ ] MOD-10 Case system: numbering, view, edit, delete, history (10.1, 10.3)
+- [x] MOD-10 Case system: numbering, view, edit, delete, history (10.1, 10.3) � 44c5832
 - [ ] MOD-11 DM before removal with appeal link (10.3)
 - [ ] MOD-12 Undo for all action types (10.4)
 - [ ] MOD-13 Warning points with expiry & escalation ladder (10.5–10.6)
@@ -225,3 +225,4 @@ Copy of spec §45. Tick each ID when done, with date & commit hash.
 - [ ] PLAT-06 Sharding readiness (36.5)
 - [ ] PLAT-07 Premium tier (37)
 - [ ] PLAT-08 Accessibility & reduced motion (39.9)
+
