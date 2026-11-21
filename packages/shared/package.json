@@ -7,10 +7,17 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "lint": "eslint . --no-error-on-unmatched-pattern",
+    "lint": "eslint src --no-error-on-unmatched-pattern",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "pino": "9.5.0",
+    "zod": "3.24.0",
+    "@sentry/node": "8.34.0"
+  },
+  "devDependencies": {
+    "vitest": "2.1.4",
+    "@types/node": "22.10.0"
+  }
 }

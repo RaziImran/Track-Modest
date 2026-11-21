@@ -1,18 +1,30 @@
+const js = require("@eslint/js");
+const tsParser = require("@typescript-eslint/parser");
+const prettier = require("eslint-config-prettier");
+
+const nodeGlobals = {
+  process: "readonly",
+  Buffer: "readonly",
+  __dirname: "readonly",
+  __filename: "readonly",
+  global: "readonly",
+  require: "readonly",
+  module: "readonly",
+  exports: "readonly",
+};
+
 module.exports = [
+  js.configs.recommended,
   {
-    files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.mjs", "**/*.cjs"],
-    ignores: [
-      "node_modules/**",
-      "dist/**",
-      "build/**",
-      ".turbo/**",
-      "coverage/**",
-      "*.tsbuildinfo",
-      "pnpm-lock.yaml",
-    ],
+    files: ["**/*.ts", "**/*.tsx"],
+    languageOptions: {
+      parser: tsParser,
+      sourceType: "module",
+      globals: nodeGlobals,
+    },
     rules: {
       "semi": ["error", "always"],
-      "quotes": ["error", "double", { "avoidEscape": true }],
+      "quotes": ["error", "double", { avoidEscape: true }],
       "indent": ["error", 2],
       "comma-dangle": ["error", "only-multiline"],
       "no-unused-vars": "warn",
@@ -23,20 +35,19 @@ module.exports = [
       "no-undef": "error",
       "strict": ["error", "safe"],
       "no-eval": "error",
-      "no-implied-eval": "error",
-      "no-new-wrappers": "error",
-      "no-octal": "error",
-      "no-octal-escape": "error",
-      "no-proto": "error",
-      "no-redeclare": "error",
-      "no-return-await": "error",
-      "no-script-url": "error",
-      "no-sequences": "error",
-      "no-unused-expressions": "error",
-      "no-void": "error",
-      "no-with": "error",
-      "radix": "error",
       "prefer-const": "error",
     },
+  },
+  prettier,
+  {
+    ignores: [
+      "node_modules/**",
+      "dist/**",
+      "build/**",
+      ".turbo/**",
+      "coverage/**",
+      "*.tsbuildinfo",
+      "pnpm-lock.yaml",
+    ],
   },
 ];
