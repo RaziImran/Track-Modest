@@ -242,6 +242,57 @@ export function applySizeScaling(setting: string, value: SettingValue, tier: Siz
   return { setting, value: adj, reason };
 }
 
+// ───────────────────────────── Adaptive size suggestions (§8.8) ─────────────────────────────
+
+/** Minimum consecutive days in a new tier before a size suggestion is offered (§8.8). */
+export const SIZE_SUGGESTION_MIN_DAYS = 7;
+
+/**
+ * Classify a raw member count into a {@link SizeTier} using the §8.2 boundaries:
+ * TINY < 50, SMALL 50–499, MEDIUM 500–4,999, LARGE 5,000–49,999, MASSIVE >= 50,000.
+ */
+export function sizeTierFromMemberCount(count: number): SizeTier {
+  if (count < 50) return "TINY";
+  if (count < 500) return "SMALL";
+  if (count < 5_000) return "MEDIUM";
+  if (count < 50_000) return "LARGE";
+  return "MASSIVE";
+}
+
+/** Outcome of {@link evaluateSizeSuggestion}. Pure — no I/O, no mutation. */
+export interface SizeSuggestion {
+  /** The tier implied by the guild's current member count. */
+  currentTier: SizeTier;
+  /** The tier currently stored in GuildConfig. */
+  storedTier: SizeTier;
+  /** True only when every gate in §8.8 passes and the owner should be prompted. */
+  shouldSuggest: boolean;
+}
+
+/**
+ * Decide whether to surface an adaptive size suggestion (§8.8).
+ *
+ * A suggestion is produced only when ALL of the following hold:
+ *  1. the member-count tier differs from the stored tier,
+ *  2. the stored tier is not locked (`sizeTierLocked === false`),
+ *  3. the member count has stayed in the new tier for at least 7 consecutive days.
+ *
+ * This function never mutates config — the owner must explicitly act on a suggestion.
+ */
+export function evaluateSizeSuggestion(
+  memberCount: number,
+  storedTier: SizeTier,
+  sizeTierLocked: boolean,
+  daysInNewTier: number,
+): SizeSuggestion {
+  const currentTier = sizeTierFromMemberCount(memberCount);
+  const shouldSuggest =
+    currentTier !== storedTier &&
+    !sizeTierLocked &&
+    daysInNewTier >= SIZE_SUGGESTION_MIN_DAYS;
+  return { currentTier, storedTier, shouldSuggest };
+}
+
 // ───────────────────────────── Resolution context ─────────────────────────────
 
 export interface ResolveContext {
