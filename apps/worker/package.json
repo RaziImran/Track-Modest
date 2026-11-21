@@ -11,8 +11,15 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --pass-with-no-tests"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@modest/db": "workspace:*",
+    "@modest/shared": "workspace:*",
+    "bullmq": "5.81.6",
+    "discord.js": "14.16.3"
+  },
   "devDependencies": {
+    "@types/node": "22.10.0",
+    "@vitest/coverage-v8": "2.1.4",
     "vitest": "2.1.4"
   }
 }
