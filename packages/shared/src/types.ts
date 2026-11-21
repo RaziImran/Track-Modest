@@ -23,7 +23,7 @@ export interface CommandContext {
 }
 
 export interface BotCommand {
-  data: unknown;
+  data: { name: string; toJSON: () => unknown };
   module: ModuleName;
   defaultMemberPermissions?: unknown;
   botPermissions?: unknown[];

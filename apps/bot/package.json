@@ -7,11 +7,14 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
-    "lint": "eslint . --no-error-on-unmatched-pattern",
+    "lint": "eslint src --no-error-on-unmatched-pattern",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "register-commands": "tsx scripts/register-commands.ts"
   },
-  "dependencies": {},
+  "dependencies": {
+    "discord.js": "14.16.3",
+    "@discordjs/rest": "2.4.0"
+  },
   "devDependencies": {}
 }

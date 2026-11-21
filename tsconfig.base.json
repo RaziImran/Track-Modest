@@ -19,8 +19,16 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "rootDir": ".",
-    "composite": true,
+    "baseUrl": ".",
+    "paths": {
+      "@modest/shared": ["packages/shared/src/index.js"],
+      "@modest/db": ["packages/db/src/index.js"],
+      "@modest/config-engine": ["packages/config-engine/src/index.js"],
+      "@modest/ai": ["packages/ai/src/index.js"],
+      "@modest/i18n": ["packages/i18n/locales/en/index.js"],
+      "@modest/cards": ["packages/cards/src/index.js"],
+      "@modest/game-data": ["packages/game-data/src/index.js"]
+    },
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.tsbuildinfo"
   },
