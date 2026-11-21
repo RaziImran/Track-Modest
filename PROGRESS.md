@@ -23,14 +23,14 @@ Copy of spec §45. Tick each ID when done, with date & commit hash.
 - [x] CFG-02 Strictness levels (8.2) — db88825
 - [x] CFG-03 Resolver with full base table + size scaling + overrides + channel overrides + trust shift (8.3–8.6) — db88825
 - [x] CFG-04 Config history & undo (8.7) � 2832b76
-- [ ] CFG-05 Adaptive size suggestions (8.8)
+- [x] CFG-05 Adaptive size suggestions (8.8) � 0837e22
 - [ ] CFG-06 Strictness recommendations (8.9)
 - [ ] CFG-07 Temporary boost (8.10)
 - [ ] CFG-08 Setup wizard with presets & preview (9.1–9.4)
 - [ ] CFG-09 `/settings` panel with categories, custom badges, reset (9.5)
 
 ### Moderation (MOD)
-- [ ] MOD-01 `/warn` with points & reason templates (10.1–10.2)
+- [x] MOD-01 `/warn` with points & reason templates (10.1–10.2) � 37180e7
 - [ ] MOD-02 `/timeout` & `/untimeout` with duration parsing (10.1)
 - [ ] MOD-03 `/kick` (10.1)
 - [ ] MOD-04 `/ban` incl. by ID, message deletion, tempban (10.1, 10.7)
@@ -81,7 +81,7 @@ Copy of spec §45. Tick each ID when done, with date & commit hash.
 - [ ] SEC-10 Shared ban network (2-guild confirmation, appeals) (15.5)
 
 ### Logging (LOG)
-- [ ] LOG-01 Message edit/delete/bulk delete (13.1)
+- [x] LOG-01 Message edit/delete/bulk delete (13.1) � 9cab6d8
 - [ ] LOG-02 Member join/leave/nick/avatar with invite tracking (13.1–13.2)
 - [ ] LOG-03 Roles, channels, voice, invites, server, emoji logs (13.1)
 - [ ] LOG-04 Per-category channels, ignore lists, size-based verbosity, batching via webhooks (13.1–13.2)
