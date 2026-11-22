@@ -77,6 +77,26 @@
         "actionFailed": "The kick failed. Please check my permissions and role hierarchy, then try again."
       },
       "success": "Case #{caseNumber} — {user} was kicked."
+    },
+    "ban": {
+      "dm": {
+        "title": "You were banned from {guild}",
+        "body": "**Server:** {guild}\n**Reason:** {reason}{duration}\n**Moderator:** {moderator}"
+      },
+      "modlog": {
+        "title": "Member banned",
+        "body": "Case #{case} — {target} was banned by {moderator}{duration}\n**Reason:** {reason}"
+      },
+      "error": {
+        "hierarchy": "{message}",
+        "notInServer": "That user is not in this server.",
+        "cannotTargetBot": "I cannot ban myself.",
+        "cannotTargetSelf": "You cannot ban yourself.",
+        "invalidDuration": "Invalid duration. Use a value like 7d, 2w, 1d or combine units (e.g. 2h30m).",
+        "missingPermissions": "I'm missing permissions to do that. Please move my role above theirs in Server Settings → Roles and grant me the Ban Members permission.",
+        "actionFailed": "The ban failed. Please check my permissions and role hierarchy, then try again."
+      },
+      "success": "Case #{caseNumber} — {user} was banned{duration}."
     }
   }
 }

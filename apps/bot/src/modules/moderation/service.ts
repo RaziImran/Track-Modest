@@ -117,6 +117,29 @@ export class ModerationService {
     return { caseNumber, caseId: created.id };
   }
 
+  async applyBan(
+    guildId: string,
+    targetId: string,
+    moderatorId: string,
+    reason: string,
+    durationSec?: number,
+  ): Promise<{ caseNumber: number; caseId: number; type: "BAN" | "TEMPBAN"; durationSec?: number }> {
+    const caseNumber = await this.deps.incrementCaseCounter(guildId);
+    const created = await this.deps.createCase({
+      guildId,
+      type: durationSec ? "TEMPBAN" : "BAN",
+      targetId,
+      moderatorId,
+      reason,
+      durationSec,
+      points: 0,
+      caseNumber,
+      automatic: false,
+    });
+    await this.deps.applyRepPenalty(guildId, targetId, -100);
+    return { caseNumber, caseId: created.id, type: durationSec ? "TEMPBAN" : "BAN", durationSec };
+  }
+
   async applyUnTimeout(
     guildId: string,
     targetId: string,

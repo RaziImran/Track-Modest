@@ -102,6 +102,60 @@ describe("ModerationService.applyKick", () => {
   });
 });
 
+describe("ModerationService.applyBan", () => {
+  it("increments the counter, creates a BAN case and applies a -100 rep penalty", async () => {
+    const deps = baseDeps();
+    deps.incrementCaseCounter.mockResolvedValue(9);
+    deps.createCase.mockResolvedValue({ id: 91, number: 9 });
+    deps.applyRepPenalty.mockResolvedValue(-100);
+
+    const service = new ModerationService(deps);
+    const result = await service.applyBan("g1", "u1", "m1", "raiding");
+
+    expect(deps.incrementCaseCounter).toHaveBeenCalledTimes(1);
+    expect(deps.incrementCaseCounter).toHaveBeenCalledWith("g1");
+    expect(deps.createCase).toHaveBeenCalledWith({
+      guildId: "g1",
+      type: "BAN",
+      targetId: "u1",
+      moderatorId: "m1",
+      reason: "raiding",
+      durationSec: undefined,
+      points: 0,
+      caseNumber: 9,
+      automatic: false,
+    });
+    expect(deps.applyRepPenalty).toHaveBeenCalledTimes(1);
+    expect(deps.applyRepPenalty).toHaveBeenCalledWith("g1", "u1", -100);
+    expect(result).toEqual({ caseNumber: 9, caseId: 91, type: "BAN", durationSec: undefined });
+  });
+
+  it("creates a TEMPBAN case with durationSec and applies a -100 rep penalty", async () => {
+    const deps = baseDeps();
+    deps.incrementCaseCounter.mockResolvedValue(3);
+    deps.createCase.mockResolvedValue({ id: 31, number: 3 });
+    deps.applyRepPenalty.mockResolvedValue(-100);
+
+    const service = new ModerationService(deps);
+    const result = await service.applyBan("g1", "u1", "m1", "spam", 3600);
+
+    expect(deps.incrementCaseCounter).toHaveBeenCalledWith("g1");
+    expect(deps.createCase).toHaveBeenCalledWith({
+      guildId: "g1",
+      type: "TEMPBAN",
+      targetId: "u1",
+      moderatorId: "m1",
+      reason: "spam",
+      durationSec: 3600,
+      points: 0,
+      caseNumber: 3,
+      automatic: false,
+    });
+    expect(deps.applyRepPenalty).toHaveBeenCalledWith("g1", "u1", -100);
+    expect(result).toEqual({ caseNumber: 3, caseId: 31, type: "TEMPBAN", durationSec: 3600 });
+  });
+});
+
 describe("ModerationService.applyUnTimeout", () => {
   it("increments the counter and creates an UNTIMEOUT case with no rep penalty", async () => {
     const deps = baseDeps();
