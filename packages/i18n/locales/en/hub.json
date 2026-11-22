@@ -1,0 +1,23 @@
+{
+  "hub": {
+    "title": "Track Modest — Hub",
+    "footer": "Open any tab to dive in · /menu",
+    "field": {
+      "level": "Level",
+      "wallet": "Wallet",
+      "season": "Season tier",
+      "today": "Today"
+    },
+    "tab": {
+      "claimDaily": "Claim daily",
+      "nova": "Talk to Nova",
+      "games": "Games",
+      "quests": "Quests",
+      "leaderboards": "Leaderboards",
+      "shop": "Shop",
+      "inventory": "Inventory",
+      "badges": "Badges",
+      "serverSettings": "Server settings"
+    }
+  }
+}
