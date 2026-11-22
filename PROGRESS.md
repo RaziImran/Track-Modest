@@ -43,7 +43,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] MOD-11 DM before removal with appeal link (10.3) — 8209871
 - [x] MOD-12 Undo for all action types (10.4) — 45b03a3
 - [x] MOD-13 Warning points with expiry & escalation ladder (10.5â€“10.6) — 0abbaf9
-- [ ] MOD-14 `/modstats` (10.1, 14.4)
+- [x] MOD-14 `/modstats` (10.1, 14.4) — 4943436
 - [ ] MOD-15 Mod notes (14.1)
 - [ ] MOD-16 Reports with queue, claim, escalation, reporter feedback (14.2)
 - [ ] MOD-17 Appeals via dashboard (14.3)
