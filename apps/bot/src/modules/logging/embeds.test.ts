@@ -3,6 +3,10 @@ import {
   buildEditEmbed,
   buildDeleteEmbed,
   buildBulkDeleteEmbed,
+  memberJoinEmbed,
+  memberLeaveEmbed,
+  nicknameChangeEmbed,
+  avatarChangeEmbed,
 } from "./embeds.js";
 import { LOG_COLORS, LOG_CATEGORY_COLORS } from "./service.js";
 
@@ -147,6 +151,102 @@ describe("logging embeds", () => {
       expect(embed.data.title).toBe("logging.bulkDelete.title");
       expect(attachment.name).toMatch(/bulk-delete-channel123-\d+\.txt/);
       expect(attachment.description).toBe("logging.bulkDelete.attachmentDesc");
+    });
+  });
+
+  describe("memberJoinEmbed", () => {
+    it("creates embed for member join", () => {
+      const data = {
+        guildId: "guild123",
+        userId: "user123",
+        userTag: "TestUser#1234",
+        userAvatarUrl: "https://example.com/avatar.png",
+        accountAge: 86400000,
+        inviteUsed: "invite123",
+        timestamp: Date.now(),
+      };
+
+      const embed = memberJoinEmbed(data, mockT);
+
+      expect(embed.data.color).toBe(LOG_CATEGORY_COLORS["members"]);
+      expect(embed.data.author?.name).toBe("TestUser#1234");
+      expect(embed.data.title).toBe("logging.members.join.title");
+      const fields = embed.data.fields;
+      expect(fields).toBeDefined();
+      expect(fields).toHaveLength(2);
+      expect(fields![0]!.name).toBe("logging.members.join.accountAge");
+      expect(fields![1]!.name).toBe("logging.members.join.inviteUsed");
+    });
+  });
+
+  describe("memberLeaveEmbed", () => {
+    it("creates embed for member leave", () => {
+      const data = {
+        guildId: "guild123",
+        userId: "user123",
+        userTag: "TestUser#1234",
+        userAvatarUrl: "https://example.com/avatar.png",
+        roles: "<@&role1>, <@&role2>",
+        timestamp: Date.now(),
+      };
+
+      const embed = memberLeaveEmbed(data, mockT);
+
+      expect(embed.data.color).toBe(LOG_CATEGORY_COLORS["members"]);
+      expect(embed.data.author?.name).toBe("TestUser#1234");
+      expect(embed.data.title).toBe("logging.members.leave.title");
+      const fields = embed.data.fields;
+      expect(fields).toBeDefined();
+      expect(fields).toHaveLength(1);
+      expect(fields![0]!.name).toBe("logging.members.leave.roles");
+    });
+  });
+
+  describe("nicknameChangeEmbed", () => {
+    it("creates embed for nickname change", () => {
+      const data = {
+        guildId: "guild123",
+        userId: "user123",
+        userTag: "TestUser#1234",
+        userAvatarUrl: "https://example.com/avatar.png",
+        oldNickname: "OldNick",
+        newNickname: "NewNick",
+        timestamp: Date.now(),
+      };
+
+      const embed = nicknameChangeEmbed(data, mockT);
+
+      expect(embed.data.color).toBe(LOG_CATEGORY_COLORS["members"]);
+      expect(embed.data.author?.name).toBe("TestUser#1234");
+      expect(embed.data.title).toBe("logging.members.nickname.title");
+      const fields = embed.data.fields;
+      expect(fields).toBeDefined();
+      expect(fields).toHaveLength(2);
+      expect(fields![0]!.name).toBe("logging.members.nickname.before");
+      expect(fields![0]!.value).toBe("OldNick");
+      expect(fields![1]!.name).toBe("logging.members.nickname.after");
+      expect(fields![1]!.value).toBe("NewNick");
+    });
+  });
+
+  describe("avatarChangeEmbed", () => {
+    it("creates embed for avatar change with new avatar as image", () => {
+      const data = {
+        guildId: "guild123",
+        userId: "user123",
+        userTag: "TestUser#1234",
+        userAvatarUrl: "https://example.com/avatar.png",
+        oldAvatarUrl: "https://example.com/old.png",
+        newAvatarUrl: "https://example.com/new.png",
+        timestamp: Date.now(),
+      };
+
+      const embed = avatarChangeEmbed(data, mockT);
+
+      expect(embed.data.color).toBe(LOG_CATEGORY_COLORS["members"]);
+      expect(embed.data.author?.name).toBe("TestUser#1234");
+      expect(embed.data.title).toBe("logging.members.avatar.title");
+      expect(embed.data.image?.url).toBe("https://example.com/new.png");
     });
   });
 });

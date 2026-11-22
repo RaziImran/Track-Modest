@@ -23,6 +23,33 @@
       "attachmentDesc": "Bulk delete log for {count} messages",
       "footer": "Bulk delete"
     },
+    "members": {
+      "join": {
+        "title": "Member Joined",
+        "description": "{user} joined the server",
+        "accountAge": "Account Age",
+        "inviteUsed": "Invite Used",
+        "footer": "User ID: {userId}"
+      },
+      "leave": {
+        "title": "Member Left",
+        "description": "{user} left the server",
+        "roles": "Roles",
+        "footer": "User ID: {userId}"
+      },
+      "nickname": {
+        "title": "Nickname Changed",
+        "description": "{user} changed their nickname",
+        "before": "Before",
+        "after": "After",
+        "footer": "User ID: {userId}"
+      },
+      "avatar": {
+        "title": "Avatar Changed",
+        "description": "{user} changed their avatar",
+        "footer": "User ID: {userId}"
+      }
+    },
     "none": "(none)"
   }
 }

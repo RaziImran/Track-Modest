@@ -6,7 +6,7 @@ import {
   AttachmentBuilder,
   TextChannel,
 } from "discord.js";
-import type { EditLogData, DeleteLogData, BulkDeleteLogData } from "./service.js";
+import type { EditLogData, DeleteLogData, BulkDeleteLogData, MemberJoinLogData, MemberLeaveLogData, NicknameChangeLogData, AvatarChangeLogData } from "./service.js";
 import { getCategoryColor, formatAttachments, formatContent, LOG_COLORS } from "./service.js";
 
 export function buildEditEmbed(
@@ -119,4 +119,92 @@ export async function sendLogMessage(
   } else {
     await channel.send({ embeds: [embedData as any], allowedMentions: { parse: [] } });
   }
+}
+
+export function memberJoinEmbed(
+  data: MemberJoinLogData,
+  t: (key: string, params?: Record<string, unknown>) => string,
+): EmbedBuilder {
+  const embed = new EmbedBuilder()
+    .setColor(getCategoryColor("members"))
+    .setAuthor({ name: data.userTag, iconURL: data.userAvatarUrl ?? undefined })
+    .setTitle(t("logging.members.join.title"))
+    .setDescription(t("logging.members.join.description", { user: `<@${data.userId}>` }))
+    .addFields(
+      { name: t("logging.members.join.accountAge"), value: formatDuration(data.accountAge), inline: true },
+      { name: t("logging.members.join.inviteUsed"), value: data.inviteUsed, inline: true },
+    )
+    .setTimestamp(data.timestamp)
+    .setFooter({ text: t("logging.members.join.footer", { userId: data.userId }) });
+
+  return embed;
+}
+
+export function memberLeaveEmbed(
+  data: MemberLeaveLogData,
+  t: (key: string, params?: Record<string, unknown>) => string,
+): EmbedBuilder {
+  const embed = new EmbedBuilder()
+    .setColor(getCategoryColor("members"))
+    .setAuthor({ name: data.userTag, iconURL: data.userAvatarUrl ?? undefined })
+    .setTitle(t("logging.members.leave.title"))
+    .setDescription(t("logging.members.leave.description", { user: `<@${data.userId}>` }))
+    .addFields(
+      { name: t("logging.members.leave.roles"), value: data.roles, inline: false },
+    )
+    .setTimestamp(data.timestamp)
+    .setFooter({ text: t("logging.members.leave.footer", { userId: data.userId }) });
+
+  return embed;
+}
+
+export function nicknameChangeEmbed(
+  data: NicknameChangeLogData,
+  t: (key: string, params?: Record<string, unknown>) => string,
+): EmbedBuilder {
+  const embed = new EmbedBuilder()
+    .setColor(getCategoryColor("members"))
+    .setAuthor({ name: data.userTag, iconURL: data.userAvatarUrl ?? undefined })
+    .setTitle(t("logging.members.nickname.title"))
+    .setDescription(t("logging.members.nickname.description", { user: `<@${data.userId}>` }))
+    .addFields(
+      { name: t("logging.members.nickname.before"), value: data.oldNickname, inline: true },
+      { name: t("logging.members.nickname.after"), value: data.newNickname, inline: true },
+    )
+    .setTimestamp(data.timestamp)
+    .setFooter({ text: t("logging.members.nickname.footer", { userId: data.userId }) });
+
+  return embed;
+}
+
+export function avatarChangeEmbed(
+  data: AvatarChangeLogData,
+  t: (key: string, params?: Record<string, unknown>) => string,
+): EmbedBuilder {
+  const embed = new EmbedBuilder()
+    .setColor(getCategoryColor("members"))
+    .setAuthor({ name: data.userTag, iconURL: data.userAvatarUrl ?? undefined })
+    .setTitle(t("logging.members.avatar.title"))
+    .setDescription(t("logging.members.avatar.description", { user: `<@${data.userId}>` }))
+    .setImage(data.newAvatarUrl ?? "")
+    .setTimestamp(data.timestamp)
+    .setFooter({ text: t("logging.members.avatar.footer", { userId: data.userId }) });
+
+  return embed;
+}
+
+function formatDuration(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const months = Math.floor(days / 30);
+  const years = Math.floor(months / 12);
+
+  if (years > 0) return `${years}y ${months % 12}mo`;
+  if (months > 0) return `${months}mo ${days % 30}d`;
+  if (days > 0) return `${days}d ${hours % 24}h`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m`;
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+  return `${seconds}s`;
 }

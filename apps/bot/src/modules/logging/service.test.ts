@@ -8,10 +8,15 @@ import {
   shouldLogCategory,
   extractMessageData,
   getMessageUrl,
+  formatMemberJoin,
+  formatMemberLeave,
+  formatNicknameChange,
+  formatAvatarChange,
   LOG_COLORS,
   LOG_CATEGORY_COLORS,
 } from "./service.js";
 import type { GuildLoggingConfig } from "./repository.js";
+import type { MemberJoinLogData, MemberLeaveLogData, NicknameChangeLogData, AvatarChangeLogData } from "./service.js";
 
 const mockGuildConfig: GuildLoggingConfig = {
   guildId: "guild123",
@@ -178,6 +183,73 @@ describe("logging service", () => {
       expect(LOG_CATEGORY_COLORS["messages"]).toBe(LOG_COLORS.INFO);
       expect(LOG_CATEGORY_COLORS["moderation"]).toBe(LOG_COLORS.DANGER);
       expect(LOG_CATEGORY_COLORS["automod"]).toBe(LOG_COLORS.DANGER);
+    });
+  });
+
+  describe("formatMemberJoin", () => {
+    it("returns member join data unchanged", () => {
+      const data: MemberJoinLogData = {
+        guildId: "guild123",
+        userId: "user123",
+        userTag: "TestUser#1234",
+        userAvatarUrl: "https://example.com/avatar.png",
+        accountAge: 86400000,
+        inviteUsed: "invite123",
+        timestamp: Date.now(),
+      };
+
+      const result = formatMemberJoin(data);
+      expect(result).toEqual(data);
+    });
+  });
+
+  describe("formatMemberLeave", () => {
+    it("returns member leave data unchanged", () => {
+      const data: MemberLeaveLogData = {
+        guildId: "guild123",
+        userId: "user123",
+        userTag: "TestUser#1234",
+        userAvatarUrl: "https://example.com/avatar.png",
+        roles: "<@&role1>, <@&role2>",
+        timestamp: Date.now(),
+      };
+
+      const result = formatMemberLeave(data);
+      expect(result).toEqual(data);
+    });
+  });
+
+  describe("formatNicknameChange", () => {
+    it("returns nickname change data unchanged", () => {
+      const data: NicknameChangeLogData = {
+        guildId: "guild123",
+        userId: "user123",
+        userTag: "TestUser#1234",
+        userAvatarUrl: "https://example.com/avatar.png",
+        oldNickname: "OldNick",
+        newNickname: "NewNick",
+        timestamp: Date.now(),
+      };
+
+      const result = formatNicknameChange(data);
+      expect(result).toEqual(data);
+    });
+  });
+
+  describe("formatAvatarChange", () => {
+    it("returns avatar change data unchanged", () => {
+      const data: AvatarChangeLogData = {
+        guildId: "guild123",
+        userId: "user123",
+        userTag: "TestUser#1234",
+        userAvatarUrl: "https://example.com/avatar.png",
+        oldAvatarUrl: "https://example.com/old.png",
+        newAvatarUrl: "https://example.com/new.png",
+        timestamp: Date.now(),
+      };
+
+      const result = formatAvatarChange(data);
+      expect(result).toEqual(data);
     });
   });
 });

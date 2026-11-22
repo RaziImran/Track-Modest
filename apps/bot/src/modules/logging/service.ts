@@ -70,6 +70,61 @@ export interface BulkDeleteLogData {
   timestamp: number;
 }
 
+export interface MemberJoinLogData {
+  guildId: string;
+  userId: string;
+  userTag: string;
+  userAvatarUrl: string | null;
+  accountAge: number;
+  inviteUsed: string;
+  timestamp: number;
+}
+
+export interface MemberLeaveLogData {
+  guildId: string;
+  userId: string;
+  userTag: string;
+  userAvatarUrl: string | null;
+  roles: string;
+  timestamp: number;
+}
+
+export interface NicknameChangeLogData {
+  guildId: string;
+  userId: string;
+  userTag: string;
+  userAvatarUrl: string | null;
+  oldNickname: string;
+  newNickname: string;
+  timestamp: number;
+}
+
+export interface AvatarChangeLogData {
+  guildId: string;
+  userId: string;
+  userTag: string;
+  userAvatarUrl: string | null;
+  oldAvatarUrl: string | null;
+  newAvatarUrl: string | null;
+  timestamp: number;
+}
+
+export function formatMemberJoin(data: MemberJoinLogData): MemberJoinLogData {
+  return data;
+}
+
+export function formatMemberLeave(data: MemberLeaveLogData): MemberLeaveLogData {
+  return data;
+}
+
+export function formatNicknameChange(data: NicknameChangeLogData): NicknameChangeLogData {
+  return data;
+}
+
+export function formatAvatarChange(data: AvatarChangeLogData): AvatarChangeLogData {
+  return data;
+}
+
 export function formatContent(content: string | null, maxLength: number = 1024): string {
   if (!content) return "*(no text content)*";
   if (content.length <= maxLength) return content;

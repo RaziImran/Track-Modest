@@ -5,6 +5,9 @@ import "./modules/logging/index.js";
 import "./events/messageUpdate.js";
 import "./events/messageDelete.js";
 import "./events/messageDeleteBulk.js";
+import "./events/guildMemberAdd.js";
+import "./events/guildMemberRemove.js";
+import "./events/guildMemberUpdate.js";
 
 registerCommand(pingCommand, import.meta.url);
 
