@@ -294,6 +294,8 @@ export const purgeCommand: BotCommand = {
       applyRepPenalty,
       getActiveWarnPoints: async () => 0,
       getLadderCasesInWindow: async () => [],
+      findCase: async () => null,
+      undoCase: async () => {},
     });
 
     const caseNumber = await service.deps.incrementCaseCounter(guildId);

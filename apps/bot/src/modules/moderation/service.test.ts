@@ -7,6 +7,8 @@ const baseDeps = () => ({
   applyRepPenalty: vi.fn(),
   getActiveWarnPoints: vi.fn(),
   getLadderCasesInWindow: vi.fn(),
+  findCase: vi.fn(),
+  undoCase: vi.fn(),
 });
 
 describe("ModerationService.applyWarn", () => {
@@ -443,5 +445,129 @@ describe("ModerationService.applyMassBan", () => {
       bannedUserIds: [],
       failedUserIds: [],
     });
+  });
+});
+
+describe("ModerationService.undoCase (§10.4)", () => {
+  const baseCase = {
+    id: 1,
+    number: 5,
+    type: "WARN",
+    targetId: "u1",
+    moderatorId: "m1",
+    reason: "spam",
+    durationSec: null,
+    points: 3,
+    undone: false,
+    undoneBy: null,
+    undoneAt: null,
+    logMessageId: null,
+    createdAt: new Date(),
+  };
+
+  it("undoes a WARN case, restores +20 × points rep, and returns case info", async () => {
+    const deps = baseDeps();
+    deps.findCase.mockResolvedValue(baseCase);
+    deps.undoCase.mockResolvedValue(undefined);
+    deps.applyRepPenalty.mockResolvedValue(60);
+
+    const service = new ModerationService(deps);
+    const result = await service.undoCase("g1", 5, "m2");
+
+    expect(deps.findCase).toHaveBeenCalledWith("g1", 5);
+    expect(deps.undoCase).toHaveBeenCalledWith("g1", 5, "m2");
+    expect(deps.applyRepPenalty).toHaveBeenCalledWith("g1", "u1", 60);
+    expect(result).toEqual({ type: "WARN", targetId: "u1", points: 3 });
+  });
+
+  it("undoes a TIMEOUT case and restores +50 rep", async () => {
+    const deps = baseDeps();
+    deps.findCase.mockResolvedValue({ ...baseCase, type: "TIMEOUT", points: 0 });
+    deps.undoCase.mockResolvedValue(undefined);
+    deps.applyRepPenalty.mockResolvedValue(50);
+
+    const service = new ModerationService(deps);
+    const result = await service.undoCase("g1", 6, "m2");
+
+    expect(deps.applyRepPenalty).toHaveBeenCalledWith("g1", "u1", 50);
+    expect(result).toEqual({ type: "TIMEOUT", targetId: "u1", points: 0 });
+  });
+
+  it("undoes a KICK case and restores +50 rep", async () => {
+    const deps = baseDeps();
+    deps.findCase.mockResolvedValue({ ...baseCase, type: "KICK", points: 0 });
+    deps.undoCase.mockResolvedValue(undefined);
+    deps.applyRepPenalty.mockResolvedValue(50);
+
+    const service = new ModerationService(deps);
+    const result = await service.undoCase("g1", 7, "m2");
+
+    expect(deps.applyRepPenalty).toHaveBeenCalledWith("g1", "u1", 50);
+    expect(result).toEqual({ type: "KICK", targetId: "u1", points: 0 });
+  });
+
+  it("undoes a BAN case and restores +100 rep", async () => {
+    const deps = baseDeps();
+    deps.findCase.mockResolvedValue({ ...baseCase, type: "BAN", points: 0 });
+    deps.undoCase.mockResolvedValue(undefined);
+    deps.applyRepPenalty.mockResolvedValue(100);
+
+    const service = new ModerationService(deps);
+    const result = await service.undoCase("g1", 8, "m2");
+
+    expect(deps.applyRepPenalty).toHaveBeenCalledWith("g1", "u1", 100);
+    expect(result).toEqual({ type: "BAN", targetId: "u1", points: 0 });
+  });
+
+  it("undoes a TEMPBAN case and restores +100 rep", async () => {
+    const deps = baseDeps();
+    deps.findCase.mockResolvedValue({ ...baseCase, type: "TEMPBAN", points: 0, durationSec: 3600 });
+    deps.undoCase.mockResolvedValue(undefined);
+    deps.applyRepPenalty.mockResolvedValue(100);
+
+    const service = new ModerationService(deps);
+    const result = await service.undoCase("g1", 9, "m2");
+
+    expect(deps.applyRepPenalty).toHaveBeenCalledWith("g1", "u1", 100);
+    expect(result).toEqual({ type: "TEMPBAN", targetId: "u1", points: 0, durationSec: 3600 });
+  });
+
+  it("undoes a SOFTBAN case and restores +100 rep", async () => {
+    const deps = baseDeps();
+    deps.findCase.mockResolvedValue({ ...baseCase, type: "SOFTBAN", points: 0 });
+    deps.undoCase.mockResolvedValue(undefined);
+    deps.applyRepPenalty.mockResolvedValue(100);
+
+    const service = new ModerationService(deps);
+    const result = await service.undoCase("g1", 10, "m2");
+
+    expect(deps.applyRepPenalty).toHaveBeenCalledWith("g1", "u1", 100);
+    expect(result).toEqual({ type: "SOFTBAN", targetId: "u1", points: 0 });
+  });
+
+  it("returns null when case not found and does not call undoCase", async () => {
+    const deps = baseDeps();
+    deps.findCase.mockResolvedValue(null);
+
+    const service = new ModerationService(deps);
+    const result = await service.undoCase("g1", 999, "m2");
+
+    expect(deps.findCase).toHaveBeenCalledWith("g1", 999);
+    expect(deps.undoCase).not.toHaveBeenCalled();
+    expect(deps.applyRepPenalty).not.toHaveBeenCalled();
+    expect(result).toBeNull();
+  });
+
+  it("returns null when case is already undone and does not call undoCase or applyRepPenalty", async () => {
+    const deps = baseDeps();
+    deps.findCase.mockResolvedValue({ ...baseCase, undone: true, undoneBy: "m3", undoneAt: new Date() });
+
+    const service = new ModerationService(deps);
+    const result = await service.undoCase("g1", 5, "m2");
+
+    expect(deps.findCase).toHaveBeenCalledWith("g1", 5);
+    expect(deps.undoCase).not.toHaveBeenCalled();
+    expect(deps.applyRepPenalty).not.toHaveBeenCalled();
+    expect(result).toBeNull();
   });
 });

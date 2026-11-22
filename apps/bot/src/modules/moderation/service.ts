@@ -36,6 +36,22 @@ export interface ModerationServiceDeps {
     points: number,
     expiryDays: number,
   ) => Promise<ModCaseType[]>;
+  findCase: (guildId: string, caseNumber: number) => Promise<{
+    id: number;
+    number: number;
+    type: string;
+    targetId: string;
+    moderatorId: string;
+    reason: string;
+    durationSec: number | null;
+    points: number;
+    undone: boolean;
+    undoneBy: string | null;
+    undoneAt: Date | null;
+    logMessageId: string | null;
+    createdAt: Date;
+  } | null>;
+  undoCase: (guildId: string, caseNumber: number, undoneBy: string) => Promise<void>;
 }
 
 export interface MassBanResult {
@@ -318,6 +334,38 @@ export class ModerationService {
       caseNumber: warnCaseNumber,
     });
     return { caseNumber: created.number, caseId: created.id };
+  }
+
+  async undoCase(
+    guildId: string,
+    caseNumber: number,
+    undoneBy: string,
+  ): Promise<{
+    type: ModCaseType;
+    targetId: string;
+    points: number;
+    durationSec?: number;
+  } | null> {
+    const case_ = await this.deps.findCase(guildId, caseNumber);
+    if (!case_ || case_.undone) return null;
+
+    await this.deps.undoCase(guildId, caseNumber, undoneBy);
+
+    // Restore rep penalty based on the original action type (§10.4)
+    if (case_.type === "WARN") {
+      await this.deps.applyRepPenalty(guildId, case_.targetId, 20 * case_.points);
+    } else if (case_.type === "TIMEOUT" || case_.type === "KICK") {
+      await this.deps.applyRepPenalty(guildId, case_.targetId, 50);
+    } else if (case_.type === "BAN" || case_.type === "TEMPBAN" || case_.type === "SOFTBAN") {
+      await this.deps.applyRepPenalty(guildId, case_.targetId, 100);
+    }
+
+    return {
+      type: case_.type as ModCaseType,
+      targetId: case_.targetId,
+      points: case_.points,
+      ...(case_.durationSec ? { durationSec: case_.durationSec } : {}),
+    };
   }
 
   static getDefaultLadder(strictness: ModStrictness): ModEscalationStep[] {

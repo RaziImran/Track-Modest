@@ -17,6 +17,8 @@ import {
   getLadderCasesInWindow,
   incrementCaseCounter,
   setCaseLogMessageId,
+  findCase,
+  undoCase,
 } from "../repository.js";
 import { encodeId } from "../../../core/componentIds.js";
 import { COLORS } from "../../../core/reply.js";
@@ -200,6 +202,8 @@ export const warnCommand: BotCommand = {
       applyRepPenalty,
       getActiveWarnPoints,
       getLadderCasesInWindow,
+      findCase,
+      undoCase,
     });
 
     const { caseNumber } = await service.applyWarn(guildId, targetId, interaction.user.id, cleanReason, cleanPoints);
@@ -234,7 +238,7 @@ export const warnCommand: BotCommand = {
     });
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(encodeId("mod", "undo", String(caseNumber), interaction.user.id))
+        .setCustomId(encodeId("mod", "undo", String(caseNumber)))
         .setLabel("Undo")
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()

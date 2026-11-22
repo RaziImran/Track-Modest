@@ -16,6 +16,8 @@ import {
   getActiveWarnPoints,
   getLadderCasesInWindow,
   incrementCaseCounter,
+  findCase,
+  undoCase,
 } from "../repository.js";
 import { encodeId } from "../../../core/componentIds.js";
 import { COLORS } from "../../../core/reply.js";
@@ -148,6 +150,8 @@ export const softbanCommand: BotCommand = {
       applyRepPenalty,
       getActiveWarnPoints,
       getLadderCasesInWindow,
+      findCase,
+      undoCase,
     });
 
     const caseNumber = await service.deps.incrementCaseCounter(guildId);
@@ -187,7 +191,7 @@ export const softbanCommand: BotCommand = {
     });
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(encodeId("mod", "softban", "undo", String(caseNumber)))
+        .setCustomId(encodeId("mod", "undo", String(caseNumber)))
         .setLabel("Undo")
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()

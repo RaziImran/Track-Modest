@@ -18,7 +18,18 @@ import {
   showReasonModal,
 } from "./commands/contextMenus.js";
 import { client } from "../../client.js";
-import { Events } from "discord.js";
+import { Events, ChannelType } from "discord.js";
+import { prisma } from "@modest/db";
+import { ModerationService } from "./service.js";
+import {
+  findCase,
+  undoCase,
+  incrementCaseCounter,
+  createCase,
+  applyRepPenalty,
+  getActiveWarnPoints,
+  getLadderCasesInWindow,
+} from "./repository.js";
 
 registerCommand(warnCommand, import.meta.url);
 registerCommand(timeoutCommand, import.meta.url);
@@ -76,6 +87,101 @@ client.on(Events.InteractionCreate, async (interaction) => {
     const t = (key: string) => key;
     await handleModalSubmit(interaction, cfg, t);
   }
+});
+
+// §MOD-12 Undo button handler — reverses WARN, TIMEOUT, KICK, BAN/TEMPBAN/SOFTBAN cases
+client.on(Events.InteractionCreate, async (interaction) => {
+  if (!interaction.isButton()) return;
+  const customId = interaction.customId;
+  if (!customId || !customId.startsWith("mod:undo:")) return;
+
+  const guild = interaction.guild;
+  if (!guild) {
+    await interaction.reply({ content: "This must be used in a server.", ephemeral: true });
+    return;
+  }
+
+  const parts = customId.split(":");
+  // mod:undo:<caseNumber>
+  const caseNumber = Number.parseInt(parts[2] ?? "", 10);
+  if (!caseNumber) {
+    await interaction.reply({ content: "Invalid case number.", ephemeral: true });
+    return;
+  }
+
+  await interaction.deferReply({ ephemeral: true });
+
+  // Load config for mod log channel
+  const config = await prisma.guildConfig.findUnique({
+    where: { guildId: guild.id },
+    select: { modLogChannelId: true, logChannels: true },
+  });
+  const modLogChannelId =
+    (config?.modLogChannelId as string | undefined) ??
+    ((config?.logChannels as Record<string, string> | undefined)?.["modLog"]);
+
+  const service = new ModerationService({
+    incrementCaseCounter,
+    createCase,
+    applyRepPenalty,
+    getActiveWarnPoints,
+    getLadderCasesInWindow,
+    findCase,
+    undoCase,
+  });
+
+  const undone = await service.undoCase(guild.id, caseNumber, interaction.user.id);
+  if (!undone) {
+    await interaction.editReply({ content: "Case not found or already undone." });
+    return;
+  }
+
+  // Perform type-specific Discord reversal action
+  try {
+    if (undone.type === "TIMEOUT") {
+      const member = guild.members.cache.get(undone.targetId);
+      if (member) await member.timeout(null, "Undone by moderator");
+    } else if (undone.type === "BAN" || undone.type === "TEMPBAN" || undone.type === "SOFTBAN") {
+      await guild.bans.remove(undone.targetId, "Undone by moderator");
+    }
+  } catch {
+    // Discord reversal may fail (e.g. user not actually banned/timed out); DB undo still stands.
+  }
+
+  // Edit log embed (§10.4: strikethrough title + "Undone by @mod")
+  const case_ = await service.deps.findCase(guild.id, caseNumber);
+  if (modLogChannelId && case_?.logMessageId) {
+    const channel = guild.channels.cache.get(modLogChannelId);
+    if (channel && channel.type === ChannelType.GuildText) {
+      try {
+        const message = await channel.messages.fetch(case_!.logMessageId);
+        const embed = message.embeds[0] as { title?: string; description?: string };
+        if (embed) {
+          const embedData = { ...embed };
+          const updatedEmbed = {
+            ...embedData,
+            title: `~~${embedData.title ?? "Case"}~~`,
+            description: embedData.description
+              ? `${embedData.description}\n\n*Undone by <@${interaction.user.id}>*`
+              : `*Undone by <@${interaction.user.id}>*`,
+          };
+          await message.edit({ embeds: [updatedEmbed] });
+        }
+      } catch {
+        // Log message may be deleted or inaccessible; continue without failing.
+      }
+    }
+  }
+
+  let extraContent = "";
+  if (undone.type === "KICK") {
+    extraContent =
+      "\n\nNote: the user cannot rejoin automatically. You may send them an invite if appropriate.";
+  }
+
+  await interaction.editReply({
+    content: `Case #${caseNumber} (${undone.type}) has been undone by <@${interaction.user.id}>.${extraContent}`,
+  });
 });
 
 export {

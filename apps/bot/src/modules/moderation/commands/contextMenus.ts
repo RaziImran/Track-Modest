@@ -306,6 +306,8 @@ export async function handleModalSubmit(
       applyRepPenalty: async () => 0,
       getActiveWarnPoints: async () => 0,
       getLadderCasesInWindow: async () => [],
+      findCase: async () => null,
+      undoCase: async () => {},
     });
 
     try {
@@ -392,6 +394,8 @@ export async function handleModalSubmit(
     applyRepPenalty,
     getActiveWarnPoints: async () => 0,
     getLadderCasesInWindow: async () => [],
+    findCase: async () => null,
+    undoCase: async () => {},
   });
 
   const guildId = guild.id;

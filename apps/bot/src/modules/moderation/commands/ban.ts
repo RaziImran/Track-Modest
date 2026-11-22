@@ -17,6 +17,8 @@ import {
   getLadderCasesInWindow,
   incrementCaseCounter,
   setCaseLogMessageId,
+  findCase,
+  undoCase,
 } from "../repository.js";
 import { encodeId } from "../../../core/componentIds.js";
 import { COLORS } from "../../../core/reply.js";
@@ -267,6 +269,8 @@ export const banCommand: BotCommand = {
       applyRepPenalty,
       getActiveWarnPoints,
       getLadderCasesInWindow,
+      findCase,
+      undoCase,
     });
 
     // §10.3 Step 2: reserve an atomic case number before the Discord action.
@@ -318,7 +322,7 @@ export const banCommand: BotCommand = {
     });
     const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId(encodeId("mod", "ban", "undo", String(caseNumber)))
+        .setCustomId(encodeId("mod", "undo", String(caseNumber)))
         .setLabel("Undo")
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()

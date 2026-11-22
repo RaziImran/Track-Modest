@@ -241,6 +241,13 @@
       "success": {
         "actioned": "{action} applied to {user}."
       }
+    },
+    "undo": {
+      "success": "Case #{caseNumber} ({type}) has been undone by <@{moderatorId}>.",
+      "kickNote": "\n\nNote: the user cannot rejoin automatically. You may send them an invite if appropriate.",
+      "notFound": "Case not found or already undone.",
+      "notInServer": "This must be used in a server.",
+      "invalidCase": "Invalid case number."
     }
   }
 }

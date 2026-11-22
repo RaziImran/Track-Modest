@@ -109,3 +109,53 @@ export async function setCaseLogMessageId(
     data: { logMessageId: messageId },
   });
 }
+
+export async function findCase(
+  guildId: string,
+  caseNumber: number,
+): Promise<{
+  id: number;
+  number: number;
+  type: string;
+  targetId: string;
+  moderatorId: string;
+  reason: string;
+  durationSec: number | null;
+  points: number;
+  undone: boolean;
+  undoneBy: string | null;
+  undoneAt: Date | null;
+  logMessageId: string | null;
+  createdAt: Date;
+} | null> {
+  const found = await prisma.case.findUnique({
+    where: { guildId_number: { guildId, number: caseNumber } },
+  });
+  if (!found) return null;
+  return {
+    id: found.id,
+    number: found.number,
+    type: found.type,
+    targetId: found.targetId,
+    moderatorId: found.moderatorId,
+    reason: found.reason,
+    durationSec: found.durationSec,
+    points: found.points,
+    undone: found.undone,
+    undoneBy: found.undoneBy,
+    undoneAt: found.undoneAt,
+    logMessageId: found.logMessageId,
+    createdAt: found.createdAt,
+  };
+}
+
+export async function undoCase(
+  guildId: string,
+  caseNumber: number,
+  undoneBy: string,
+): Promise<void> {
+  await prisma.case.updateMany({
+    where: { guildId, number: caseNumber, undone: false },
+    data: { undone: true, undoneBy, undoneAt: new Date() },
+  });
+}

@@ -17,6 +17,8 @@ import {
   getLadderCasesInWindow,
   incrementCaseCounter,
   setCaseLogMessageId,
+  findCase,
+  undoCase,
 } from "../repository.js";
 import { encodeId } from "../../../core/componentIds.js";
 import { COLORS } from "../../../core/reply.js";
@@ -252,6 +254,8 @@ export const massbanCommand: BotCommand = {
       applyRepPenalty,
       getActiveWarnPoints,
       getLadderCasesInWindow,
+      findCase,
+      undoCase,
     });
 
     const result = await service.applyMassBan(guildId, bannedIds, actorId, cleanReason);
