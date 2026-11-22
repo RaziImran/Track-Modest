@@ -27,7 +27,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] CFG-06 Strictness recommendations (8.9) — 0bad439
 - [x] CFG-07 Temporary boost (8.10) — 31c14f4
 - [ ] CFG-08 Setup wizard with presets & preview (9.1â€“9.4)
-- [ ] CFG-09 `/settings` panel with categories, custom badges, reset (9.5)
+- [x] CFG-09 `/settings` panel with categories, custom badges, reset (9.5) — ad98727
 
 ### Moderation (MOD)
 - [x] MOD-01 `/warn` with points & reason templates (10.1â€“10.2) — 37180e7
