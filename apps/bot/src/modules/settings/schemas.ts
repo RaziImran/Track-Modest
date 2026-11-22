@@ -27,7 +27,7 @@ export type SettingChange = z.infer<typeof SettingChangeSchema>;
 // Category → setting key mapping (§9.5)
 export const CATEGORY_SETTINGS: Record<SettingsCategory, string[]> = {
   General: ["sizeTier", "strictness"],
-  Protection: ["antinuke.threshold", "antinuke.trustedUsers", "verify.mode", "verify.minAccountAgeDays", "verify.kickAfterMinutes", "raid.windowSec", "raid.minJoins", "raid.joinMultiplier", "raid.action", "raid.pingMods", "compromised.enabled", "compromised.threshold", "compromised.timeoutMinutes"],
+  Protection: ["antinuke.threshold", "antinuke.trustedUsers", "verify.mode", "verify.minAccountAgeDays", "verify.kickAfterMinutes", "raid.windowSec", "raid.minJoins", "raid.joinMultiplier", "raid.action", "raid.pingMods", "compromised.enabled", "compromised.threshold", "compromised.timeoutMinutes", "risk.enabled"],
   AutoMod: [
     "automod.spam.maxMessages",
     "automod.spam.windowSec",
@@ -83,6 +83,7 @@ export const SETTING_LABELS: Record<string, string> = {
   "compromised.enabled": "Compromised account detection",
   "compromised.threshold": "Compromised link channel threshold",
   "compromised.timeoutMinutes": "Compromised timeout (minutes)",
+  "risk.enabled": "Risk score computation",
   "verify.mode": "Verification mode",
   "verify.minAccountAgeDays": "Min account age (days)",
   "verify.kickAfterMinutes": "Kick unverified after (minutes)",
