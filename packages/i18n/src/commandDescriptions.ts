@@ -39,6 +39,7 @@ export const commandDescriptions: CommandDescriptionMap = {
   history: { en: "Show a member's moderation case history and active warning points." },
   modstats: { en: "Moderation statistics for this server." },
   note: { en: "Add, list, or delete moderation notes for a member." },
+  report: { en: "Report a user for rule violations." },
 };
 
 /**

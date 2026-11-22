@@ -295,6 +295,27 @@
         "cannotDelete": "You cannot delete this note.",
         "hierarchy": "{message}"
       }
+    },
+    "report": {
+      "title": "Report {user}",
+      "summary": "Report a user for rule violations.",
+      "queue": {
+        "title": "Report Queue — #{id}",
+        "claim": "Claim",
+        "takeAction": "Take action",
+        "noAction": "No action",
+        "viewHistory": "View history"
+      },
+      "success": {
+        "submitted": "Report #{id} has been submitted. Moderators will review it."
+      },
+      "error": {
+        "notInServer": "This command must be used in a server.",
+        "cannotReportSelf": "You cannot report yourself.",
+        "cannotReportBot": "You cannot report a bot.",
+        "rateLimited": "You can only submit 5 reports per hour. Please try again later.",
+        "hierarchy": "{message}"
+      }
     }
   }
 }
