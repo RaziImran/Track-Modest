@@ -49,7 +49,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [ ] MOD-17 Appeals via dashboard (14.3)
 - [x] MOD-18 Staff activity in weekly report (14.5) — 7c823db
 - [x] MOD-19 Permission Doctor with one-click fixes (14.6) — 47a56bf
-- [ ] MOD-20 Rule simulator (14.7) — BLOCKED: requires AutoMod module pipeline (see DECISIONS.md)
+- [x] MOD-20 Rule simulator (14.7) — f891dc5
 
 ### AutoMod (AM)
 - [x] AM-01 Exemptions (11.2) — b1c225d

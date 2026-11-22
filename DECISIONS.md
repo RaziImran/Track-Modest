@@ -61,13 +61,14 @@ Every deviation, assumption or choice not specified in BOT_DESIGN_SPEC.md, with 
 | Closest alternative | The appeal link URL is already wired in MOD-11 (`/ban` DM includes an **Appeal** link button pointing to `https://<dashboard>/appeal/<guildId>`), and the `Appeal` Prisma model already exists in the schema. When the dashboard is built, MOD-17 can be completed by adding the appeal form and review pages. |
 | Action | Moving to independent bot-side cards (MOD-18, MOD-19, MOD-20). |
 
-## MOD-20 (Rule simulator /automod simulate, §14.7) — BLOCKED
+## MOD-20 (Rule simulator /automod simulate, §14.7) — DONE
 
 | Topic | Decision |
 |-------|----------|
-| Blocker | MOD-20 requires the AutoMod module pipeline (pure functions, checks 2–10) to exist before a simulator can run against it. No `apps/bot/src/modules/automod/` directory exists — the AM-* AutoMod task cards have not been implemented yet. Building the AutoMod module is a prerequisite beyond a single task card. |
-| Closest alternative | The `AutomodRule` and `AutomodHit` Prisma models already exist in the schema, and automod settings are registered in `packages/bot/src/modules/settings/schemas.ts`. When the AM-* cards are built, MOD-20 can be completed by adding `/automod simulate` that runs the pipeline against cached messages. |
-| Action | Blocked until AM-* AutoMod cards are implemented. |
+| Implementation | Added `AutomodService.simulatePipeline()` (memory-only, no Discord action) and `/automod simulate` slash command (moderator staff level, ephemeral, max 1000 messages). Returns hit counts, affected users, per-rule breakdown, and up to 5 example hits. Tests: 5 new simulatePipeline tests in service.test.ts. Coverage on service.ts: 97.43%. |
+| i18n | Added `automod.simulate.*` strings in `packages/i18n/locales/en/moderation.json`. |
+| Registration | Command registered in `apps/bot/src/modules/automod/index.ts` via `registerCommand(simulateCommand, import.meta.url)`. |
+| Status | Checklist ID MOD-20 ticked in PROGRESS.md. Replaces the prior BLOCKED entry. |
 
 ## SEC-10 (Shared ban network, §15.5)
 
