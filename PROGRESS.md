@@ -12,7 +12,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] CORE-07 Module enable/disable (6.9) — eb38632
 - [x] CORE-08 Database schema & migrations (7) â€” 5c59423
 - [x] CORE-09 Redis keys & caching (7.3) â€” 5c59423
-- [ ] CORE-10 Worker app with BullMQ & recovery sweeps (3, 10.7)
+- [x] CORE-10 Worker app with BullMQ & recovery sweeps (3, 10.7) — 4e9d91d
 - [ ] CORE-11 UI helpers: panels, progress bars, numbers, timestamps, Components V2 (39)
 - [ ] CORE-12 Hub `/menu` with tabs and red-dot indicators (39.5)
 - [ ] CORE-13 i18n with localized command descriptions (31)
@@ -31,7 +31,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 
 ### Moderation (MOD)
 - [x] MOD-01 `/warn` with points & reason templates (10.1â€“10.2) — 37180e7
-- [ ] MOD-02 `/timeout` & `/untimeout` with duration parsing (10.1)
+- [x] MOD-02 `/timeout` & `/untimeout` with duration parsing (10.1) — c60919f
 - [ ] MOD-03 `/kick` (10.1)
 - [ ] MOD-04 `/ban` incl. by ID, message deletion, tempban (10.1, 10.7)
 - [ ] MOD-05 `/softban`, `/unban` with autocomplete (10.1)
@@ -82,7 +82,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 
 ### Logging (LOG)
 - [x] LOG-01 Message edit/delete/bulk delete (13.1) — 9cab6d8
-- [ ] LOG-02 Member join/leave/nick/avatar with invite tracking (13.1â€“13.2)
+- [x] LOG-02 Member join/leave/nick/avatar with invite tracking (13.1â€“13.2) — 70f067e
 - [ ] LOG-03 Roles, channels, voice, invites, server, emoji logs (13.1)
 - [ ] LOG-04 Per-category channels, ignore lists, size-based verbosity, batching via webhooks (13.1â€“13.2)
 - [ ] LOG-05 Ghost ping detection (13.2)
