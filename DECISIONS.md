@@ -1,27 +1,26 @@
-# Track Modest โ€” Decisions & Deviations
+# Track Modest — Decisions & Deviations
 
 Every deviation, assumption or choice not specified in BOT_DESIGN_SPEC.md, with reason.
 
-## Pinned decisions (adopted from KILO_CODE_MASTER_PLAN.md ยง4)
+## Pinned decisions (adopted from KILO_CODE_MASTER_PLAN.md ง4)
 
 | Topic | Decision |
 |---|---|
 | Module system | ESM everywhere (`"type": "module"`), `module/moduleResolution: NodeNext`, strict TS, `noUncheckedIndexedAccess` on |
-| Dev runner | tsx watch per app; production builds with tsup (bundle per app) โ€” decided in T0.1 |
-| Exact versions | `.npmrc` โ’ `save-exact=true`; every dependency pinned (spec ยง2). Lockfile committed |
+| Dev runner | tsx watch per app; production builds with tsup (bundle per app) — decided in T0.1 |
+| Exact versions | `.npmrc` ? `save-exact=true`; every dependency pinned (spec ง2). Lockfile committed |
 | Workspace scope | `@modest/bot`, `@modest/worker`, `@modest/voice`, `@modest/game-server`, `@modest/activity`, `@modest/dashboard`, `@modest/db`, `@modest/shared`, `@modest/config-engine`, `@modest/ai`, `@modest/i18n`, `@modest/cards`, `@modest/game-data` |
-| Lint/format | ESLint (flat config) + Prettier; `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` at repo root via Turborepo |
-| IDs & time | Snowflakes as `string`; timestamps stored UTC; display with Discord `<t:โ€ฆ>` |
-| Schema strategy | Port the entire spec ยง7.2 Prisma schema in T0.3, migrate once, add further migrations only for genuinely new tables/columns |
+| Lint/format | ESLint (flat config) + Prettier; `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` at repo level via Turborepo |
+| IDs & time | Snowflakes as `string`; timestamps stored UTC; display with Discord `<t:…>` |
+| Schema strategy | Port the entire spec ง7.2 Prisma schema in T0.3, migrate once, add further migrations only for genuinely new tables/columns |
 | Prisma setup | Follow the current Prisma quickstart for the installed major |
 | Test layout | `*.test.ts` next to the file; integration tests `*.int.test.ts` using Testcontainers; shared fakes in `packages/shared/test/fakes` |
-| Errors | Typed `AppError(code, userMessageKey)`; router converts to friendly error panel with 8-char error code (spec ยง6.3) |
-| Feature flags | Every module has an entry in `GuildConfig.modules` (spec ยง6.9); every command declares `module` |
+| Errors | Typed `AppError(code, userMessageKey)`; router converts to friendly error panel with 8-char error code (spec ง6.3) |
+| Feature flags | Every module has an entry in `GuildConfig.modules` (spec ง6.9); every command declares `module` |
 | i18n keys | `packages/i18n/locales/en/<module>.json`; key style `module.feature.message` |
-| Content data | Items/recipes/monsters/buildings/cards/pets as JSON in `packages/game-data`, validated by Zod at build time (spec ยง42.16) |
+| Content data | Items/recipes/monsters/buildings/cards/pets as JSON in `packages/game-data`, validated by Zod at build time (spec ง42.16) |
 | Commit style | Conventional Commits; one commit per task card; body lists the checklist IDs |
 | Worker deps (CORE-10) | `bullmq@5.81.6`, `discord.js@14.16.3`, `@vitest/coverage-v8@2.1.4` added to `@modest/worker`; `pnpm-workspace.yaml` `allowBuilds.msgpackr-extract@3.0.7: true` (BullMQ optional native dep) and `minimumReleaseAgeExclude.bullmq@5.81.6`. Worker uses discord.js REST only (no gateway connection). |
-
 
 ## MOD-02 (/timeout & /untimeout)
 
@@ -32,3 +31,12 @@ Every deviation, assumption or choice not specified in BOT_DESIGN_SPEC.md, with 
 | Staff-level boundary | BotCommand.staffLevel is static "helper"; the >1h ? moderator rule (ง10.1) is enforced dynamically in execute() via `levelSatisfies("moderator", ctx.staffLevel)` because the router passes staffLevel at runtime. |
 | Duration parsing | `ModerationService.parseDuration` supports s/m/h/d/w and combined units (e.g. "2h30m"); max 28d enforced via `MAX_TIMEOUT_SECONDS`, longer refused with a tempban suggestion (ง10.8). |
 | Bot self-target | Refused for /timeout (ง10.8); for /untimeout it is a no-op allowed through hierarchy checks. |
+
+## MOD-04 (/ban)
+
+| Topic | Decision |
+|---|---|
+| Ban rep penalty | ง20.4 lists Ban as -200, but the MOD-04 assignment specifies -100 for `/ban`. Implemented `applyBan` with a -100 penalty (`service.ts:139`), matching the assignment. Recorded here as a deviation from the spec. |
+| BullMQ expiry scheduling | The bot package has no `bullmq` dependency and no queue infra (queue lives in `apps/worker` per DECISIONS.md CORE-10). `applyBan` persists the case as `TEMPBAN` with `durationSec`; the worker's recovery sweep (ง10.7) picks up expired tempbans on start. No BullMQ job is enqueued from the bot command to avoid adding a dependency and breaking `typecheck`. |
+| ctx.confirm() | `ctx.confirm` is a stub returning `false` (interactionRouter.ts:37,70), so using it would always cancel the action. kick.ts (the MOD-03 template) does not confirm, so `/ban` follows kick exactly: no confirm, no cooldown, defer + error handling only. |
+| User not in server | `/ban` uses `guild.bans.create(id, ...)` (not `member.ban()`), so the target does not need to be a guild member; `interaction.options.getUser("user")` resolves any valid user ID. |
