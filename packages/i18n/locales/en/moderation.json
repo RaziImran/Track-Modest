@@ -448,6 +448,19 @@
       "error": {
         "notInServer": "This must be used in a server."
       }
+    },
+    "bannetwork": {
+      "title": "Shared Ban Network",
+      "enabled": "Shared ban network enabled for this server.",
+      "disabled": "Shared ban network disabled for this server.",
+      "joinAction": "When a listed user joins: {action}.",
+      "reported": "Ban reported to the shared ban network (category: {category}).",
+      "active": "User is actively listed in the shared ban network ({category}).",
+      "confirmation": "{count}/2 guilds have confirmed this listing.",
+      "error": {
+        "notInServer": "This must be used in a server.",
+        "notParticipating": "This server is not participating in the shared ban network."
+      }
     }
   }
 }

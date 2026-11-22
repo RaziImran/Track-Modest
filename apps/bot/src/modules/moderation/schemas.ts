@@ -73,6 +73,8 @@ export function validateKickInput(raw: unknown): KickCommandInput | { error: str
 
 export const BanDeleteMessagesSchema = z.enum(["none", "1h", "24h", "7d"]);
 
+export const BanCategorySchema = z.enum(["scam", "raid", "nsfw-spam"]).optional();
+
 export const BanCommandInputSchema = z.object({
   user: z.string().min(1, "User is required"),
   reason: z.string().min(1, "Reason is required").max(1000, "Reason too long"),
@@ -81,6 +83,7 @@ export const BanCommandInputSchema = z.object({
     .regex(/^\s*\d+\s*(s|m|h|d|w)(\s*\d+\s*(s|m|h|d|w))*\s*$/i, "Invalid duration (e.g. 5m, 2h30m, 1d, 7d, 2w)")
     .optional(),
   deleteMessages: BanDeleteMessagesSchema.optional().default("none"),
+  category: BanCategorySchema,
 });
 
 export type BanCommandInput = z.infer<typeof BanCommandInputSchema>;

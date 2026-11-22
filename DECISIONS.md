@@ -64,7 +64,16 @@ Every deviation, assumption or choice not specified in BOT_DESIGN_SPEC.md, with 
 ## MOD-20 (Rule simulator /automod simulate, §14.7) — BLOCKED
 
 | Topic | Decision |
-|---|---|
+|-------|----------|
 | Blocker | MOD-20 requires the AutoMod module pipeline (pure functions, checks 2–10) to exist before a simulator can run against it. No `apps/bot/src/modules/automod/` directory exists — the AM-* AutoMod task cards have not been implemented yet. Building the AutoMod module is a prerequisite beyond a single task card. |
 | Closest alternative | The `AutomodRule` and `AutomodHit` Prisma models already exist in the schema, and automod settings are registered in `packages/bot/src/modules/settings/schemas.ts`. When the AM-* cards are built, MOD-20 can be completed by adding `/automod simulate` that runs the pipeline against cached messages. |
 | Action | Blocked until AM-* AutoMod cards are implemented. |
+
+## SEC-10 (Shared ban network, §15.5)
+
+| Topic | Decision |
+|-------|----------|
+| Ban category UI | Spec §15.5 says "moderator selects a category in the ban modal". Implemented as an optional slash-command `category` option on `/ban` (choices: `scam`, `raid`, `nsfw-spam`) instead of a modal. Functionally equivalent: plain `/ban` without a category is never shared; only categorized bans create `BanListEntry`s. Backward-compatible with existing ban behaviour. |
+| Settings source | `network.enabled` and `network.joinAction` are custom opt-in overrides, not in the config-engine `SettingKey` union, so `resolveSetting` cannot be used with a typed key. They are read directly from `guildConfig.overrides` in `BanNetworkRepository`, defaulting to disabled / `alert`. |
+| Entry activation | A `BanListEntry` is created with `status: "pending"` and `confirmedBy: 1`. It becomes `active` only when a second distinct guild bans the same user in the same category (`confirmedBy >= 2`), matching §15.5's "2 different guilds" requirement. Only `active` entries affect other guilds on join. |
+| Join enforcement | `alert` (default) and `require_verification` are signal/log actions with no immediate enforcement in the join handler (verification gating is owned by the verification module). `ban` enforces by banning the listed member on join. Dashboard appeals and the bot-operator removal panel are deferred to the dashboard (blocked, see MOD-17). |

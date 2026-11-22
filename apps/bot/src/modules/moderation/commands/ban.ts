@@ -21,6 +21,8 @@ import {
   undoCase,
   getUserCases,
 } from "../repository.js";
+import { BanNetworkService } from "../../bannetwork/service.js";
+import { BanNetworkRepository } from "../../bannetwork/repository.js";
 import { encodeId } from "../../../core/componentIds.js";
 import { COLORS } from "../../../core/reply.js";
 
@@ -176,6 +178,17 @@ export const banCommand: BotCommand = {
           { name: "Last 7 days", value: "7d" },
         )
         .setRequired(false),
+    )
+    .addStringOption((opt) =>
+      opt
+        .setName("category")
+        .setDescription("Ban category (shared with the ban network when set: scam, raid, nsfw-spam)")
+        .addChoices(
+          { name: "Scam", value: "scam" },
+          { name: "Raid", value: "raid" },
+          { name: "NSFW spam", value: "nsfw-spam" },
+        )
+        .setRequired(false),
     ),
   module: "moderation",
   staffLevel: "moderator",
@@ -199,18 +212,20 @@ export const banCommand: BotCommand = {
     const reason = interaction.options.getString("reason", true);
     const durationRaw = interaction.options.getString("duration");
     const deleteMessagesRaw = interaction.options.getString("delete_messages");
+    const categoryRaw = interaction.options.getString("category");
 
     const parsed = validateBanInput({
       user: targetUser.id,
       reason,
       duration: durationRaw ?? undefined,
       deleteMessages: deleteMessagesRaw ?? "none",
+      category: categoryRaw ?? undefined,
     });
     if ("error" in parsed) {
       await ctx.error(parsed.error);
       return;
     }
-    const { user: targetId, reason: cleanReason, duration: durationStr, deleteMessages } = parsed;
+    const { user: targetId, reason: cleanReason, duration: durationStr, deleteMessages, category } = parsed;
 
     const guild = interaction.guild;
     if (!guild) {
@@ -310,6 +325,19 @@ export const banCommand: BotCommand = {
       automatic: false,
     });
     await service.deps.applyRepPenalty(guildId, targetId, -100);
+
+    // §15.5: report categorized bans to the shared ban network (log-only unless 2 guilds confirm).
+    if (category) {
+      const banNetwork = new BanNetworkService(
+        BanNetworkRepository.createServiceDeps(new BanNetworkRepository({})),
+      );
+      await banNetwork.reportBan({
+        guildId,
+        userId: targetId,
+        category,
+        reason: cleanReason,
+      });
+    }
 
     // §10.3 Step 7: mod-log + save logMessageId.
     await sendModLog(ctx, guild, cfg, caseNumber, targetUser, interaction.user, cleanReason, durationSec);
