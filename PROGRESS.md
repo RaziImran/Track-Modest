@@ -48,7 +48,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] MOD-16 Reports with queue, claim, escalation, reporter feedback (14.2) — 6cc01ed
 - [ ] MOD-17 Appeals via dashboard (14.3)
 - [x] MOD-18 Staff activity in weekly report (14.5) — 7c823db
-- [ ] MOD-19 Permission Doctor with one-click fixes (14.6)
+- [x] MOD-19 Permission Doctor with one-click fixes (14.6) — 47a56bf
 - [ ] MOD-20 Rule simulator (14.7)
 
 ### AutoMod (AM)
