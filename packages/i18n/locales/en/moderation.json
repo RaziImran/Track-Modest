@@ -326,6 +326,39 @@
       "error": {
         "notInServer": "This command must be used in a server."
       }
+    },
+    "checkperms": {
+      "title": "Permission Doctor — Audit Report",
+      "summary": "{passed} of {total} checks passed {severity}",
+      "error": {
+        "notInServer": "This command must be used in a server."
+      },
+      "check": {
+        "botMissingPerms": "Bot missing required permissions",
+        "botRoleBelowStaff": "Bot role below staff role",
+        "everyoneDangerousPerms": "@everyone has dangerous permissions",
+        "roleWithAdmin": "Role with many members has Administrator",
+        "departedWebhooks": "Webhooks from departed members",
+        "mfaOff": "Guild 2FA requirement is off",
+        "verificationNone": "Verification level is None",
+        "modLogVisible": "Mod-log channel visible to @everyone"
+      },
+      "detail": {
+        "allGood": "All good.",
+        "roleBelowStaff": "Staff role \"{role}\" is at or above bot's highest role \"{botRole}\".",
+        "everyoneDangerous": "@everyone has: {perms}.",
+        "roleWithAdmin": "Role \"{role}\" has Administrator with {count} members.",
+        "departedWebhooks": "{count} webhook(s) owned by departed members.",
+        "mfaOff": "Two-factor authentication is not required for moderation actions.",
+        "verificationNone": "Server verification level is set to None.",
+        "modLogVisible": "Mod-log channel is viewable by @everyone."
+      },
+      "fix": {
+        "removeFromEveryone": "Remove dangerous permissions from @everyone",
+        "deleteWebhooks": "Delete webhooks from departed members",
+        "setVerification": "Set verification level to Low/Medium",
+        "hideModLog": "Hide mod-log channel from @everyone"
+      }
     }
   }
 }

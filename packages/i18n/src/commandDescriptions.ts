@@ -41,6 +41,7 @@ export const commandDescriptions: CommandDescriptionMap = {
   note: { en: "Add, list, or delete moderation notes for a member." },
   report: { en: "Report a user for rule violations." },
   staffactivity: { en: "Show staff members with zero moderation actions in the last 30 days." },
+  checkperms: { en: "Permission Doctor: audit bot permissions and server security." },
 };
 
 /**
