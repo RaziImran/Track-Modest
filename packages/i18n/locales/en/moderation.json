@@ -1,0 +1,64 @@
+{
+  "moderation": {
+    "warn": {
+      "dm": {
+        "title": "You received a warning in {guild}",
+        "body": "**Action:** {action}\n**Reason:** {reason}\n**Warning points:** {points}\n**Moderator:** {moderator}"
+      },
+      "modlog": {
+        "title": "Warning issued",
+        "body": "Case #{case} — {target} was warned by {moderator}\n**Reason:** {reason}\n**Points:** {points}"
+      },
+      "error": {
+        "hierarchy": "{message}"
+      },
+      "success": "Case #{caseNumber} — {user} was warned (+{points} points, {activePoints} active)."
+    },
+    "timeout": {
+      "dm": {
+        "title": "You were timed out",
+        "body": "**Server:** {guild}\n**Duration:** {duration}\n**Reason:** {reason}\n**Moderator:** {moderator}"
+      },
+      "modlog": {
+        "title": "Member timed out",
+        "body": "Case #{case} — {target} was timed out for {duration} by {moderator}\n**Reason:** {reason}"
+      },
+      "unit": {
+        "day": "{count}d",
+        "hour": "{count}h",
+        "minute": "{count}m"
+      },
+      "error": {
+        "hierarchy": "{message}",
+        "notInServer": "That user is not in this server.",
+        "invalidDuration": "Invalid duration. Use a value like 5m, 10m, 1h, 6h, 1d, 7d or 28d (you can combine units, e.g. 2h30m).",
+        "tooLong": "Timeouts cannot exceed 28 days (Discord's limit). Use the tempban system for longer durations.",
+        "needModerator": "Timeouts longer than 1 hour require the moderator staff level.",
+        "cannotTargetBot": "I cannot time out myself.",
+        "missingPermissions": "I'm missing permissions to do that. Please move my role above theirs in Server Settings → Roles and grant me the Moderate Members permission.",
+        "actionFailed": "The timeout failed. Please check my permissions and role hierarchy, then try again."
+      },
+      "warning": {
+        "targetIsBot": "\nNote: the target is a bot."
+      },
+      "success": "Case #{caseNumber} — {user} was timed out for {duration}.{warn}"
+    },
+    "untimeout": {
+      "dm": {
+        "title": "Your timeout was removed",
+        "body": "**Server:** {guild}\n**Reason:** {reason}\n**Moderator:** {moderator}"
+      },
+      "modlog": {
+        "title": "Timeout removed",
+        "body": "Case #{case} — {target}'s timeout was removed by {moderator}\n**Reason:** {reason}"
+      },
+      "error": {
+        "hierarchy": "{message}",
+        "notInServer": "That user is not in this server.",
+        "missingPermissions": "I'm missing permissions to do that. Please move my role above theirs in Server Settings → Roles and grant me the Moderate Members permission.",
+        "actionFailed": "Removing the timeout failed. Please check my permissions and role hierarchy, then try again."
+      },
+      "success": "Case #{caseNumber} — the timeout on {user} was removed."
+    }
+  }
+}

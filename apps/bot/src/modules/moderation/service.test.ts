@@ -49,6 +49,93 @@ describe("ModerationService.applyWarn", () => {
   });
 });
 
+describe("ModerationService.applyTimeout", () => {
+  it("increments the counter, creates a TIMEOUT case with durationSec and applies a -50 rep penalty", async () => {
+    const deps = baseDeps();
+    deps.incrementCaseCounter.mockResolvedValue(5);
+    deps.createCase.mockResolvedValue({ id: 51, number: 5 });
+    deps.applyRepPenalty.mockResolvedValue(-50);
+
+    const service = new ModerationService(deps);
+    const result = await service.applyTimeout("g1", "u1", "m1", "spamming", 3600);
+
+    expect(deps.incrementCaseCounter).toHaveBeenCalledWith("g1");
+    expect(deps.createCase).toHaveBeenCalledWith({
+      guildId: "g1",
+      type: "TIMEOUT",
+      targetId: "u1",
+      moderatorId: "m1",
+      reason: "spamming",
+      durationSec: 3600,
+      points: 0,
+      caseNumber: 5,
+      automatic: false,
+    });
+    expect(deps.applyRepPenalty).toHaveBeenCalledWith("g1", "u1", -50);
+    expect(result).toEqual({ caseNumber: 5, caseId: 51 });
+  });
+});
+
+describe("ModerationService.applyUnTimeout", () => {
+  it("increments the counter and creates an UNTIMEOUT case with no rep penalty", async () => {
+    const deps = baseDeps();
+    deps.incrementCaseCounter.mockResolvedValue(6);
+    deps.createCase.mockResolvedValue({ id: 60, number: 6 });
+
+    const service = new ModerationService(deps);
+    const result = await service.applyUnTimeout("g1", "u1", "m1", "appeal accepted");
+
+    expect(deps.createCase).toHaveBeenCalledWith({
+      guildId: "g1",
+      type: "UNTIMEOUT",
+      targetId: "u1",
+      moderatorId: "m1",
+      reason: "appeal accepted",
+      points: 0,
+      caseNumber: 6,
+      automatic: false,
+    });
+    expect(deps.applyRepPenalty).not.toHaveBeenCalled();
+    expect(result).toEqual({ caseNumber: 6, caseId: 60 });
+  });
+});
+
+describe("ModerationService.parseDuration", () => {
+  it("parses single units into seconds", () => {
+    expect(ModerationService.parseDuration("30s")).toBe(30);
+    expect(ModerationService.parseDuration("90m")).toBe(5400);
+    expect(ModerationService.parseDuration("1h")).toBe(3600);
+    expect(ModerationService.parseDuration("1d")).toBe(86400);
+    expect(ModerationService.parseDuration("1w")).toBe(604800);
+  });
+
+  it("parses combined units", () => {
+    expect(ModerationService.parseDuration("2h30m")).toBe(9000);
+    expect(ModerationService.parseDuration("1d 2h")).toBe(93600);
+    expect(ModerationService.parseDuration("1h15m30s")).toBe(4530);
+  });
+
+  it("is case-insensitive and tolerates whitespace", () => {
+    expect(ModerationService.parseDuration(" 2H 30M ")).toBe(9000);
+  });
+
+  it("returns 28 days in seconds", () => {
+    expect(ModerationService.parseDuration("28d")).toBe(28 * 86400);
+  });
+
+  it("throws on empty input", () => {
+    expect(() => ModerationService.parseDuration("")).toThrow(/Invalid duration/);
+    expect(() => ModerationService.parseDuration("   ")).toThrow(/Invalid duration/);
+  });
+
+  it("throws on unparseable input", () => {
+    expect(() => ModerationService.parseDuration("abc")).toThrow(/Invalid duration/);
+    expect(() => ModerationService.parseDuration("10x")).toThrow(/Invalid duration/);
+    expect(() => ModerationService.parseDuration("30")).toThrow(/Invalid duration/);
+    expect(() => ModerationService.parseDuration("h30m")).toThrow(/Invalid duration/);
+  });
+});
+
 describe("ModerationService.checkEscalation", () => {
   const ladder = ModerationService.getDefaultLadder("BALANCED");
 

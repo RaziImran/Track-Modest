@@ -73,6 +73,77 @@ export class ModerationService {
     return { caseNumber, caseId: created.id };
   }
 
+  async applyTimeout(
+    guildId: string,
+    targetId: string,
+    moderatorId: string,
+    reason: string,
+    durationSec: number,
+  ): Promise<{ caseNumber: number; caseId: number }> {
+    const caseNumber = await this.deps.incrementCaseCounter(guildId);
+    const created = await this.deps.createCase({
+      guildId,
+      type: "TIMEOUT",
+      targetId,
+      moderatorId,
+      reason,
+      durationSec,
+      points: 0,
+      caseNumber,
+      automatic: false,
+    });
+    await this.deps.applyRepPenalty(guildId, targetId, -50);
+    return { caseNumber, caseId: created.id };
+  }
+
+  async applyUnTimeout(
+    guildId: string,
+    targetId: string,
+    moderatorId: string,
+    reason: string,
+  ): Promise<{ caseNumber: number; caseId: number }> {
+    const caseNumber = await this.deps.incrementCaseCounter(guildId);
+    const created = await this.deps.createCase({
+      guildId,
+      type: "UNTIMEOUT",
+      targetId,
+      moderatorId,
+      reason,
+      points: 0,
+      caseNumber,
+      automatic: false,
+    });
+    return { caseNumber, caseId: created.id };
+  }
+
+  /**
+   * Parse a human duration string into seconds. Supports combined units, e.g.
+   * "90m" -> 5400, "2h30m" -> 9000, "1d" -> 86400, "28d" -> 2419200, "1w" -> 604800.
+   * Units: s (seconds), m (minutes), h (hours), d (days), w (weeks).
+   * Throws on empty or unparseable input.
+   */
+  static parseDuration(input: string): number {
+    const units: Record<string, number> = { s: 1, m: 60, h: 3600, d: 86400, w: 604800 };
+    const clean = input.trim().toLowerCase().replace(/\s+/g, "");
+    if (clean.length === 0) {
+      throw new Error(`Invalid duration: "${input}"`);
+    }
+    const tokenRe = /(\d+)(s|m|h|d|w)/g;
+    let total = 0;
+    let consumed = "";
+    let match: RegExpExecArray | null;
+    while ((match = tokenRe.exec(clean)) !== null) {
+      const value = Number.parseInt(match[1] ?? "0", 10);
+      const unit = match[2] ?? "";
+      total += value * (units[unit] ?? 0);
+      consumed += match[0];
+    }
+    if (consumed.length === 0 || consumed !== clean) {
+      throw new Error(`Invalid duration: "${input}"`);
+    }
+    return total;
+  }
+
   async checkEscalation(
     guildId: string,
     targetId: string,

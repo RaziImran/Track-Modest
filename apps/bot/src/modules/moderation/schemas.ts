@@ -17,6 +17,45 @@ export function validateWarnInput(raw: unknown): WarnCommandInput | { error: str
   return parsed.data;
 }
 
+// Discord's hard limit for a single timeout is 28 days (in seconds).
+export const MAX_TIMEOUT_SECONDS = 28 * 24 * 60 * 60;
+
+const DurationStringSchema = z
+  .string()
+  .min(1, "Duration is required")
+  .regex(/^\s*\d+\s*(s|m|h|d|w)(\s*\d+\s*(s|m|h|d|w))*\s*$/i, "Invalid duration (e.g. 5m, 2h30m, 1d, 28d)");
+
+export const TimeoutCommandInputSchema = z.object({
+  user: z.string().min(1, "User is required"),
+  duration: DurationStringSchema,
+  reason: z.string().min(1, "Reason is required").max(1000, "Reason too long"),
+});
+
+export type TimeoutCommandInput = z.infer<typeof TimeoutCommandInputSchema>;
+
+export function validateTimeoutInput(raw: unknown): TimeoutCommandInput | { error: string } {
+  const parsed = TimeoutCommandInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  return parsed.data;
+}
+
+export const UnTimeoutCommandInputSchema = z.object({
+  user: z.string().min(1, "User is required"),
+  reason: z.string().min(1, "Reason is required").max(1000, "Reason too long"),
+});
+
+export type UnTimeoutCommandInput = z.infer<typeof UnTimeoutCommandInputSchema>;
+
+export function validateUnTimeoutInput(raw: unknown): UnTimeoutCommandInput | { error: string } {
+  const parsed = UnTimeoutCommandInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  return parsed.data;
+}
+
 export const CaseViewInputSchema = z.object({
   number: z.coerce.number().int().min(1, "Invalid case number"),
 });
