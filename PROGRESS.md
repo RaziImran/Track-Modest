@@ -40,7 +40,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] MOD-08 `/lock`, `/unlock`, `/lockdown`, `/slowmode`, `/nick` (10.1) — 011583c
 - [x] MOD-09 Moderate user & Moderate message context menus with quick panels (10.1) — 7bbd5df
 - [x] MOD-10 Case system: numbering, view, edit, delete, history (10.1, 10.3) — 44c5832
-- [ ] MOD-11 DM before removal with appeal link (10.3)
+- [x] MOD-11 DM before removal with appeal link (10.3) — 8209871
 - [ ] MOD-12 Undo for all action types (10.4)
 - [ ] MOD-13 Warning points with expiry & escalation ladder (10.5â€“10.6)
 - [ ] MOD-14 `/modstats` (10.1, 14.4)
