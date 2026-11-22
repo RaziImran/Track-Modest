@@ -36,7 +36,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] MOD-04 `/ban` incl. by ID, message deletion, tempban (10.1, 10.7) — 0a8dfc3
 - [x] MOD-05 `/softban`, `/unban` with autocomplete (10.1) — f53ecea
 - [x] MOD-06 `/massban` with confirmation (10.1) — c2eb839
-- [ ] MOD-07 `/purge` (any/user/bots/links/attachments/contains/regex), 14-day handling (10.1)
+- [x] MOD-07 `/purge` (any/user/bots/links/attachments/contains/regex), 14-day handling (10.1) — 5b4e0bc
 - [ ] MOD-08 `/lock`, `/unlock`, `/lockdown`, `/slowmode`, `/nick` (10.1)
 - [ ] MOD-09 Moderate user & Moderate message context menus with quick panels (10.1)
 - [x] MOD-10 Case system: numbering, view, edit, delete, history (10.1, 10.3) — 44c5832
