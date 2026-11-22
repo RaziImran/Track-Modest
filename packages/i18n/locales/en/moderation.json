@@ -370,6 +370,29 @@
       "error": {
         "notInServer": "This must be used in a server."
       }
+    },
+    "verification": {
+      "title": "Verification Gate",
+      "status:title": "Verification Configuration",
+      "status:mode": "Mode",
+      "status:minAge": "Min account age (days)",
+      "status:kickAfter": "Kick unverified after",
+      "status:disabled": "Disabled",
+      "mode:set": "Verification mode set to {mode}.",
+      "minage:set": "Minimum account age set to {days} days.",
+      "kickafter:set": "Kick unverified after {minutes}.",
+      "setup:verifyTitle": "Verify your account",
+      "setup:verifyDesc": "Click the button below to verify and gain access to the server.",
+      "setup:verifyDescCaptcha": "Solve the captcha below to verify and gain access to the server.",
+      "setup:btnVerify": "Verify",
+      "setup:btnCaptcha": "Start Captcha",
+      "setup:done": "Verification channel set up: {channel}.",
+      "setup:roleFailed": "Failed to create the Unverified role.",
+      "setup:channelFailed": "Failed to create the #verify channel.",
+      "setup:permissionsFailed": "Failed to set channel permissions.",
+      "setup:messageFailed": "Failed to post the verification message.",
+      "error:notInServer": "This must be used in a server.",
+      "error:unknownSubcommand": "Unknown verification subcommand."
     }
   }
 }

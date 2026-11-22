@@ -26,6 +26,7 @@ import {
   type RaidState,
 } from "../modules/antiraid/service.js";
 import { AntiraidRepository } from "../modules/antiraid/repository.js";
+import { handleGuildMemberAddVerification } from "../modules/verification/index.js";
 import { TemporaryBoostService } from "../modules/config/service.js";
 import {
   createTemporaryBoost,
@@ -76,6 +77,9 @@ async function sendModLog(
 
 export async function handleGuildMemberAdd(member: GuildMember): Promise<void> {
   if (member.user.bot) return;
+
+  // §12.2 Verification: add Unverified role to members who need verification
+  await handleGuildMemberAddVerification(member);
 
   const guildId = member.guild.id;
 
