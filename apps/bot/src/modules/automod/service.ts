@@ -80,8 +80,27 @@ export interface AutomodResponse {
   reviewType?: "automod_ai" | "automod_media";
   /** Evidence to attach to the review item. */
   reviewEvidence?: unknown;
-  /** AI explanation text for automod_ai items. */
-  reviewAiExplanation?: string | null;
+/** AI explanation text for automod_ai items. */
+reviewAiExplanation?: string | null;
+}
+
+export interface SimulatedHit {
+  messageId: string;
+  userId: string;
+  channelId: string;
+  ruleKey: string;
+  action: AutomodAction | "none";
+  reason: string;
+  wouldDelete: boolean;
+}
+
+export interface SimulationResult {
+  totalMessages: number;
+  wouldActionCount: number;
+  wouldDeleteCount: number;
+  affectedUsers: Set<string>;
+  hits: SimulatedHit[];
+  byRuleKey: Record<string, number>;
 }
 
 // Severity ladder for repeat escalation (low → high)
@@ -271,6 +290,86 @@ export class AutomodService {
     }
 
     return this.noneResponse();
+  }
+
+  // ───────────────────────────── Simulation (§14.7 Rule simulator) ─────────────────────────────
+
+  /** Run the AutoMod pipeline against a list of messages without taking action (§14.7). */
+  async simulatePipeline(
+    messages: Array<{
+      messageId: string;
+      userId: string;
+      channelId: string;
+      content: string;
+      attachments: Array<{ filename: string; size: number; contentType?: string }>;
+      channelIsNsfw: boolean;
+      isBot: boolean;
+      isStaff: boolean;
+      memberRoles: string[];
+      embedUrls: string[];
+      mentionUserIds: string[];
+      mentionRoleIds: string[];
+      mentionEveryone: boolean;
+      mentionHere: boolean;
+      timestamp: Date;
+      replyChainPriorHits: boolean;
+    }>,
+    guildId: string,
+  ): Promise<SimulationResult> {
+    const hits: SimulatedHit[] = [];
+    const affectedUsers = new Set<string>();
+    const byRuleKey: Record<string, number> = {};
+
+    for (const msg of messages) {
+      if (msg.isBot || msg.isStaff) continue;
+
+      const input: AutomodMessageInput = {
+        guildId,
+        userId: msg.userId,
+        channelId: msg.channelId,
+        memberId: msg.userId,
+        authorId: msg.userId,
+        content: msg.content,
+        memberRoles: msg.memberRoles,
+        isBot: msg.isBot,
+        isStaff: msg.isStaff,
+        embedUrls: msg.embedUrls,
+        attachmentCount: msg.attachments.length,
+        attachments: msg.attachments,
+        mentionedUserIds: msg.mentionUserIds,
+        mentionedRoleIds: msg.mentionRoleIds,
+        mentionEveryone: msg.mentionEveryone,
+        mentionHere: msg.mentionHere,
+        messageId: msg.messageId,
+        timestamp: msg.timestamp,
+        channelIsNsfw: msg.channelIsNsfw,
+        replyChainPriorHits: msg.replyChainPriorHits,
+      };
+
+      const response = await this.handleMessage(input);
+      if (response.action !== "none" || response.shouldPostToReviewQueue) {
+        hits.push({
+          messageId: msg.messageId,
+          userId: msg.userId,
+          channelId: msg.channelId,
+          ruleKey: response.ruleKey,
+          action: response.action,
+          reason: response.reason,
+          wouldDelete: response.shouldDelete,
+        });
+        affectedUsers.add(msg.userId);
+        byRuleKey[response.ruleKey] = (byRuleKey[response.ruleKey] ?? 0) + 1;
+      }
+    }
+
+    return {
+      totalMessages: messages.length,
+      wouldActionCount: hits.length,
+      wouldDeleteCount: hits.filter((h) => h.wouldDelete).length,
+      affectedUsers,
+      hits,
+      byRuleKey,
+    };
   }
 
   // ───────────────────────────── Check 1: Exemptions ─────────────────────────────

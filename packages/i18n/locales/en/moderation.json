@@ -484,6 +484,22 @@
       "check:custom": "Custom rule matched: {ruleName}.",
       "check:ai_review": "AI context review flagged this message ({category}, severity {severity}).",
       "check:media_scan": "Media scan flagged an attachment ({category}).",
+      "simulate": {
+        "title": "AutoMod Simulation",
+        "field": {
+          "scanned": "Messages scanned",
+          "wouldAction": "Would action",
+          "wouldDelete": "Would delete",
+          "affectedUsers": "Affected users",
+          "examples": "Example hits"
+        },
+        "example": {
+          "label": "• {rule} → {action}: {reason}",
+          "delete": "delete",
+          "action": "action",
+          "none": "No messages would be actioned."
+        }
+      },
       "error": {
         "notInServer": "This must be used in a server."
       }

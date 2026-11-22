@@ -726,4 +726,107 @@ describe("AutomodService", () => {
       expect(result.shouldPostToReviewQueue).toBe(false);
     });
   });
+
+  // ───────────────────────────── simulatePipeline (§14.7 Rule simulator) ─────────────────────────────
+
+  describe("simulatePipeline", () => {
+    const msg = (overrides: Partial<{
+      messageId: string;
+      userId: string;
+      content: string;
+      isBot: boolean;
+      isStaff: boolean;
+    }> = {}) => ({
+      messageId: overrides.messageId ?? "m1",
+      userId: overrides.userId ?? "u1",
+      channelId: "c1",
+      content: overrides.content ?? "hello world",
+      attachments: [],
+      channelIsNsfw: false,
+      isBot: overrides.isBot ?? false,
+      isStaff: overrides.isStaff ?? false,
+      memberRoles: [],
+      embedUrls: [],
+      mentionUserIds: [],
+      mentionRoleIds: [],
+      mentionEveryone: false,
+      mentionHere: false,
+      timestamp: new Date(),
+      replyChainPriorHits: false,
+    });
+
+    it("returns zero hits when all messages are clean", async () => {
+      const deps = baseDeps();
+      const service = new AutomodService(deps, defaultConfig);
+      const result = await service.simulatePipeline(
+        [msg({ content: "hello world" }), msg({ messageId: "m2", userId: "u2", content: "clean message" })],
+        "g1",
+      );
+      expect(result.totalMessages).toBe(2);
+      expect(result.wouldActionCount).toBe(0);
+      expect(result.wouldDeleteCount).toBe(0);
+      expect(result.affectedUsers.size).toBe(0);
+      expect(result.hits).toHaveLength(0);
+    });
+
+    it("detects bad-word hits and counts would-delete", async () => {
+      const deps = baseDeps();
+      const service = new AutomodService(deps, { ...defaultConfig, firstAction: "delete" });
+      const result = await service.simulatePipeline(
+        [
+          msg({ content: "hello world" }),
+          msg({ messageId: "m2", userId: "u2", content: "this contains examplebad word" }),
+        ],
+        "g1",
+      );
+      expect(result.totalMessages).toBe(2);
+      expect(result.wouldActionCount).toBe(1);
+      expect(result.wouldDeleteCount).toBe(1);
+      expect(result.affectedUsers.has("u2")).toBe(true);
+      expect(result.hits.length).toBeGreaterThan(0);
+      expect(result.hits[0]!.ruleKey).toBe("automod:badwords");
+      expect(result.hits[0]!.wouldDelete).toBe(true);
+    });
+
+    it("groups hits by rule key", async () => {
+      const deps = baseDeps();
+      const service = new AutomodService(deps, defaultConfig);
+      const result = await service.simulatePipeline(
+        [
+          msg({ messageId: "m1", userId: "u1", content: "examplebad word here" }),
+          msg({ messageId: "m2", userId: "u2", content: "another examplebad word" }),
+        ],
+        "g1",
+      );
+      expect(result.byRuleKey["automod:badwords"]).toBe(2);
+    });
+
+    it("skips bots and staff messages", async () => {
+      const deps = baseDeps();
+      const service = new AutomodService(deps, defaultConfig);
+      const result = await service.simulatePipeline(
+        [
+          msg({ messageId: "m1", userId: "bot1", content: "examplebad", isBot: true }),
+          msg({ messageId: "m2", userId: "staff1", content: "examplebad", isStaff: true }),
+          msg({ messageId: "m3", userId: "u1", content: "examplebad" }),
+        ],
+        "g1",
+      );
+      expect(result.wouldActionCount).toBe(1);
+      expect(result.affectedUsers.has("u1")).toBe(true);
+      expect(result.affectedUsers.has("bot1")).toBe(false);
+      expect(result.affectedUsers.has("staff1")).toBe(false);
+    });
+
+    it("caps at the requested message count", async () => {
+      const deps = baseDeps();
+      const service = new AutomodService(deps, defaultConfig);
+      const many = Array.from({ length: 50 }, (_, i) =>
+        msg({ messageId: `m${i}`, userId: `u${i}`, content: "examplebad word" }),
+      );
+      const result = await service.simulatePipeline(many.slice(0, 3), "g1");
+      expect(result.totalMessages).toBe(3);
+      expect(result.wouldActionCount).toBe(3);
+    });
+  });
 });

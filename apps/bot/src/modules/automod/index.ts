@@ -2,8 +2,10 @@
 // Listens to MessageCreate and runs the automod pipeline; executes actions via Discord API.
 import { client } from "../../client.js";
 import { Events, Message } from "discord.js";
+import { registerCommand } from "../../core/commandRegistry.js";
 import { AutomodRepository } from "./repository.js";
 import { AutomodService } from "./service.js";
+import { simulateCommand } from "./commands/simulate.js";
 import { postToReviewQueue } from "../reviewqueue/index.js";
 
 const repo = new AutomodRepository({ redisUrl: process.env["REDIS_URL"] ?? "" });
@@ -28,6 +30,8 @@ const service = new AutomodService(AutomodRepository.createServiceDeps(repo), {
   aiEnabled: false, // AM-12: enabled when AI module wiring is complete
   mediaScanEnabled: false, // AM-13: enabled when vision model wiring is complete
 });
+
+registerCommand(simulateCommand, import.meta.url);
 
 // Placeholder AI/media classification deps — wired to the AI module when implemented (AI-01…).
 // Until then, these return null, causing checks 11–12 to skip silently (§11.6, §11.7).
