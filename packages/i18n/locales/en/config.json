@@ -1,0 +1,43 @@
+{
+  "config": {
+    "strictness": {
+      "label": {
+        "relaxed": "Relaxed",
+        "balanced": "Balanced",
+        "strict": "Strict",
+        "lockdown": "Lockdown"
+      },
+      "description": {
+        "relaxed": "Minimal automation. Mods handle most issues manually. Good for small, close-knit communities.",
+        "balanced": "Balanced protection with sensible defaults. AutoMod handles common spam; mods handle edge cases.",
+        "strict": "Strong automation. AutoMod actively filters spam, links, invites, and bad words. Verification recommended.",
+        "lockdown": "Maximum protection. All strict features plus aggressive raid defenses. For servers under active attack."
+      },
+      "reason": {
+        "modsDoingWork": "Mods are doing most of the work. Consider **one level stricter**.",
+        "automodFalsePositives": "AutoMod is catching too much. Consider **one level more relaxed**.",
+        "raidsDetected": "Multiple raids detected. Consider **Strict** and enabling verification.",
+        "noChange": "Current strictness level is appropriate for this server's activity."
+      },
+      "recommendation": {
+        "title": "Strictness Recommendation",
+        "current": "Current level: **{current}**",
+        "recommended": "Recommended: **{recommended}**",
+        "reason": "Reason: {reason}",
+        "applyButton": "Apply",
+        "dismissButton": "Dismiss"
+      }
+    },
+    "size": {
+      "suggestion": {
+        "title": "Server Size Change Detected",
+        "up": "Your server grew to **{count} members** 🎉. I'd suggest switching from **{from}** to **{to}** protection.",
+        "down": "Your server size changed to **{count} members**. Consider switching from **{from}** to **{to}** protection.",
+        "previewButton": "Preview changes",
+        "applyButton": "Switch",
+        "keepButton": "Keep current",
+        "dontAskButton": "Don't ask again"
+      }
+    }
+  }
+}
