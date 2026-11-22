@@ -1,0 +1,66 @@
+{
+  "setup": {
+    "error": {
+      "notInServer": "Setup must be run in a server."
+    },
+    "button": {
+      "next": "Next",
+      "back": "Back",
+      "skip": "Skip",
+      "apply": "Apply",
+      "cancel": "Cancel",
+      "createChannels": "Create channels for me"
+    },
+    "step1": {
+      "title": "Step 1 of 8 — Language",
+      "description": "Choose your server's language. This affects bot responses and logs.",
+      "field": {
+        "current": "Current locale",
+        "default": "English (default)"
+      }
+    },
+    "step2": {
+      "title": "Step 2 of 8 — Server type",
+      "description": "Choose a preset that matches your community. Each preset applies recommended strictness, modules, and extra settings."
+    },
+    "step3": {
+      "title": "Step 3 of 8 — Server size",
+      "description": "Auto-detected tier: {autoDetected} ({memberCount} members). Adjust if needed.",
+      "field": {
+        "current": "Current size tier"
+      }
+    },
+    "step4": {
+      "title": "Step 4 of 8 — Strictness",
+      "description": "Choose how strictly the bot should enforce rules. This affects AutoMod, anti-raid, and penalties."
+    },
+    "step5": {
+      "title": "Step 5 of 8 — Staff roles",
+      "description": "Choose which roles can use moderation commands. You can select up to 10 roles per level."
+    },
+    "step6": {
+      "title": "Step 6 of 8 — Channels",
+      "description": "Choose a mod-log channel and welcome channel. Or let the bot create them for you."
+    },
+    "step7": {
+      "title": "Step 7 of 8 — Features",
+      "description": "Toggle the modules you want to enable. You can change these later in /settings."
+    },
+    "step8": {
+      "title": "Step 8 of 8 — Preview",
+      "description": "Review your choices before applying. Changes are written in a single transaction and recorded in /settings history.",
+      "field": {
+        "preview": "Profile preview",
+        "noChanges": "No changes yet."
+      }
+    },
+    "complete": {
+      "title": "Setup complete!",
+      "description": "Your server is now configured. You can adjust any setting anytime with /settings."
+    },
+    "cancel": {
+      "title": "Setup cancelled",
+      "description": "Setup was cancelled. Run /setup again to resume."
+    }
+  }
+}

@@ -77,6 +77,14 @@ model TemporaryBoost {           // /strictness boost and auto-lockdown
   @@index([guildId, endsAt])
 }
 
+model SetupWizardState {        // ephemeral setup wizard state (30 min TTL)
+  guildId   String
+  userId    String
+  stateJson Json
+  updatedAt DateTime @updatedAt
+  @@id([guildId, userId])
+}
+
 // ───────────────────────────── MEMBERS ─────────────────────────────
 
 model Member {                    // one row per (guild, user) the bot has seen act
