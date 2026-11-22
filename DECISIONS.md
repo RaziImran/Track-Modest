@@ -40,3 +40,15 @@ Every deviation, assumption or choice not specified in BOT_DESIGN_SPEC.md, with 
 | BullMQ expiry scheduling | The bot package has no `bullmq` dependency and no queue infra (queue lives in `apps/worker` per DECISIONS.md CORE-10). `applyBan` persists the case as `TEMPBAN` with `durationSec`; the worker's recovery sweep (§10.7) picks up expired tempbans on start. No BullMQ job is enqueued from the bot command to avoid adding a dependency and breaking `typecheck`. |
 | ctx.confirm() | `ctx.confirm` is a stub returning `false` (interactionRouter.ts:37,70), so using it would always cancel the action. kick.ts (the MOD-03 template) does not confirm, so `/ban` follows kick exactly: no confirm, no cooldown, defer + error handling only. |
 | User not in server | `/ban` uses `guild.bans.create(id, ...)` (not `member.ban()`), so the target does not need to be a guild member; `interaction.options.getUser("user")` resolves any valid user ID. |
+
+## MOD-06 (/massban)
+
+| Topic | Decision |
+|---|---|
+| Case creation | One case per banned user (not one mass case). This follows the existing pattern where each moderation action creates an individual case, enabling per-user undo/view and consistent rep penalty tracking. `applyMassBan` returns arrays of caseNumbers and caseIds. |
+| Rep penalty | -100 per banned user (same as individual ban), applied via `applyRepPenalty` for each user. |
+| ctx.confirm() | Required for destructive action. Uses `ctx.confirm()` with a message showing the number of users to be banned. The confirm function is provided by the CommandContext (currently stubbed in interactionRouter; will be wired up when confirm middleware is implemented). |
+| Bulk ban batching | Uses `guild.members.bulkBan()` in batches of 100 (Discord limit is ~200 per call). Falls back to individual `guild.bans.create()` if bulk ban fails partially. |
+| Max users | 200 users per command invocation (enforced by schema validation). |
+| Self/bot protection | Filters out the bot itself and the command invoker from the target list before processing. |
+| Hierarchy checks | Performed for all targets that are current guild members. Users not in the server are still banned (via bulkBan which accepts user IDs). |

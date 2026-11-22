@@ -1,5 +1,6 @@
 {
   "$schema": "https://app.kilo.ai/config.json",
+  "reasoning_display": "headline",
   "shared_agent_board": true,
   "subagent_model": "kilo-auto/free",
   "agent": {

@@ -32,7 +32,10 @@ For substantial work that can be split safely:
 ### Concise output
 
 - Do not print chain-of-thought, private deliberation, repeated instructions, or long narrated tool plans. Think internally; expose only a short action summary and material findings.
-- Progress updates: one sentence only, and only at a real milestone or blocker. Board posts: one concise line.
+- While a task is running, do not send progress narration, explanations, or intermediate findings to the chat. Keep the visible task/status label limited to the current task name (one short line); continue planning, delegating, debugging, and editing silently.
+- Do not expose agent-by-agent chatter in the parent chat. Use the shared board and child task results internally for coordination; surface a blocker only when work cannot continue safely without user input.
+- Send exactly one concise chat response when the whole requested task or project goal is complete. It should contain the result, changed files, checks, and any real blocker in at most five bullets. For a blocked goal, send one short blocker report instead of pretending it is complete.
+- Board posts: one concise line. Do not use the board as a channel for narrated progress.
 - Task prompts: include only the goal, owned files, constraints, and acceptance checks. Avoid repeating repository rules already in `AGENTS.md`.
 - Use the lowest reasoning-effort variant available for the selected model (`low`/`minimal`); do not request extended/high reasoning. If the selected model has no reasoning variant, leave its setting unchanged rather than guessing a provider-specific parameter.
 - Final reports: at most five bullets covering completed IDs, files/commit, checks, and blockers. Omit generic explanations and repeated history.

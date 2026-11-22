@@ -16,7 +16,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] CORE-11 UI helpers: panels, progress bars, numbers, timestamps, Components V2 (39) — e8f0c59
 - [x] CORE-12 Hub `/menu` with tabs and red-dot indicators (39.5) — 34a1fa4
 - [x] CORE-13 i18n with localized command descriptions (31) — f1c2e48
-- [ ] CORE-14 Health checks, graceful shutdown, metrics (36.3â€“36.4)
+- [x] CORE-14 Health checks, graceful shutdown, metrics (36.3–36.4) — 041524e
 
 ### Configuration (CFG)
 - [x] CFG-01 Size tiers auto-detect + override (8.2) â€” db88825
@@ -24,7 +24,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] CFG-03 Resolver with full base table + size scaling + overrides + channel overrides + trust shift (8.3â€“8.6) â€” db88825
 - [x] CFG-04 Config history & undo (8.7) — 2832b76
 - [x] CFG-05 Adaptive size suggestions (8.8) — 0837e22
-- [ ] CFG-06 Strictness recommendations (8.9)
+- [x] CFG-06 Strictness recommendations (8.9) — 0bad439
 - [ ] CFG-07 Temporary boost (8.10)
 - [ ] CFG-08 Setup wizard with presets & preview (9.1â€“9.4)
 - [ ] CFG-09 `/settings` panel with categories, custom badges, reset (9.5)
@@ -35,7 +35,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] MOD-03 `/kick` (10.1) — feeb154
 - [x] MOD-04 `/ban` incl. by ID, message deletion, tempban (10.1, 10.7) — 0a8dfc3
 - [x] MOD-05 `/softban`, `/unban` with autocomplete (10.1) — f53ecea
-- [ ] MOD-06 `/massban` with confirmation (10.1)
+- [x] MOD-06 `/massban` with confirmation (10.1) — c2eb839
 - [ ] MOD-07 `/purge` (any/user/bots/links/attachments/contains/regex), 14-day handling (10.1)
 - [ ] MOD-08 `/lock`, `/unlock`, `/lockdown`, `/slowmode`, `/nick` (10.1)
 - [ ] MOD-09 Moderate user & Moderate message context menus with quick panels (10.1)
