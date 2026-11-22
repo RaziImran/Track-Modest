@@ -121,6 +121,17 @@
       "confirm": "Are you sure you want to ban **{count}** user(s)? This action cannot be undone in bulk.",
       "cancelled": "Mass ban cancelled.",
       "success": "Mass ban complete: **{successCount}** banned, **{failCount}** failed. Cases: #{caseNumbers}."
+    },
+    "purge": {
+      "error": {
+        "notInServer": "This command must be used in a server.",
+        "invalidPattern": "Invalid regex pattern.",
+        "noMessages": "No messages found matching the criteria."
+      },
+      "warning": {
+        "tooOld": "{count} message(s) were older than 14 days and could not be bulk-deleted (Discord limitation)."
+      },
+      "success": "Purged **{deletedCount}** message(s) ({subcommand}) in {channel}.{tooOld}"
     }
   }
 }

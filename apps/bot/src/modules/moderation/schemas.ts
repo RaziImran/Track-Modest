@@ -184,3 +184,40 @@ export function validateMassBanInput(raw: unknown): { userIds: string[]; reason:
   }
   return { userIds, reason: parsed.data.reason };
 }
+
+export const PurgeSubcommandSchema = z.enum(["any", "user", "bots", "links", "attachments", "contains", "regex"]);
+
+export const PurgeCommandInputSchema = z.object({
+  subcommand: PurgeSubcommandSchema,
+  amount: z.coerce.number().int().min(1, "Amount must be between 1 and 1000").max(1000, "Amount must be between 1 and 1000").default(100),
+  user: z.string().optional(),
+  text: z.string().max(1000, "Text too long").optional(),
+  pattern: z.string().max(1000, "Pattern too long").optional(),
+});
+
+export type PurgeCommandInput = z.infer<typeof PurgeCommandInputSchema>;
+
+export function validatePurgeInput(raw: unknown): PurgeCommandInput | { error: string } {
+  const parsed = PurgeCommandInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  const data = parsed.data;
+  if (data.subcommand === "user" && !data.user) {
+    return { error: "User is required for the user subcommand" };
+  }
+  if (data.subcommand === "contains" && !data.text) {
+    return { error: "Text is required for the contains subcommand" };
+  }
+  if (data.subcommand === "regex" && !data.pattern) {
+    return { error: "Pattern is required for the regex subcommand" };
+  }
+  return data;
+}
+
+const MESSAGE_AGE_LIMIT_MS = 14 * 24 * 60 * 60 * 1000; // 14 days
+
+export function isMessageTooOld(timestamp: Date | string): boolean {
+  const msgTime = typeof timestamp === "string" ? new Date(timestamp).getTime() : timestamp.getTime();
+  return Date.now() - msgTime > MESSAGE_AGE_LIMIT_MS;
+}
