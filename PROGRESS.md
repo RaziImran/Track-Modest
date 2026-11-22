@@ -63,8 +63,8 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] AM-09 Caps/emoji/newlines/zalgo (11.2) — b1c225d
 - [x] AM-10 Custom rules with re2 regex & shadow flag (11.5) — b1c225d
 - [x] AM-11 Actions, public notice, DM explanation, log with Undo/False positive, repeat escalation (11.4) — b1c225d
-- [ ] AM-12 AI context review ? review queue (11.6)
-- [ ] AM-13 Media scan ? review queue (11.7)
+- [x] AM-12 AI context review ? review queue (11.6) — aa1ea61
+- [x] AM-13 Media scan ? review queue (11.7) — aa1ea61
 - [x] AM-14 Native Discord AutoMod sync (11.8) — b1c225d
 - [x] AM-15 Dangerous file warnings (23.4) — b1c225d
 
