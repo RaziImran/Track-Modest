@@ -359,6 +359,17 @@
         "setVerification": "Set verification level to Low/Medium",
         "hideModLog": "Hide mod-log channel from @everyone"
       }
+    },
+    "antiraid": {
+      "title": "Anti-Raid Alert",
+      "raidDetected": "🚨 Raid detected: {joins} joins in {window}s (threshold: {threshold})",
+      "raidDetectedPing": "🚨 Raid detected @here: {joins} joins in {window}s (threshold: {threshold})",
+      "lockdownActive": "Lockdown boost active for 15 minutes. Action: {action}",
+      "kickSuspicious": "Kicked {count} suspicious account(s) during raid.",
+      "restoreVerification": "Raid lockdown ended. Verification level restored to {level}.",
+      "error": {
+        "notInServer": "This must be used in a server."
+      }
     }
   }
 }
