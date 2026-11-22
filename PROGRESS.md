@@ -69,7 +69,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [ ] AM-15 Dangerous file warnings (23.4)
 
 ### Protection (SEC)
-- [ ] SEC-01 Join-spike detection with baseline (12.1)
+- [x] SEC-01 Join-spike detection with baseline (12.1) — 198d850
 - [ ] SEC-02 Suspicion scoring & raid actions with alert buttons (12.1)
 - [ ] SEC-03 Verification: button, captcha, quiz, account-age, kick-after (12.2)
 - [ ] SEC-04 Anti-nuke via audit log with trusted users & bot-add protection (12.3)
