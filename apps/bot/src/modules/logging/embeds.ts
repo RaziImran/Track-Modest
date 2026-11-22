@@ -6,7 +6,7 @@ import {
   AttachmentBuilder,
   TextChannel,
 } from "discord.js";
-import type { EditLogData, DeleteLogData, BulkDeleteLogData, MemberJoinLogData, MemberLeaveLogData, NicknameChangeLogData, AvatarChangeLogData } from "./service.js";
+import type { EditLogData, DeleteLogData, BulkDeleteLogData, MemberJoinLogData, MemberLeaveLogData, NicknameChangeLogData, AvatarChangeLogData, RoleUpdateLogData, ChannelEventLogData, VoiceEventLogData, InviteEventLogData, GuildUpdateLogData, EmojiUpdateLogData } from "./service.js";
 import { getCategoryColor, formatAttachments, formatContent, LOG_COLORS } from "./service.js";
 
 export function buildEditEmbed(
@@ -207,4 +207,44 @@ function formatDuration(ms: number): string {
   if (hours > 0) return `${hours}h ${minutes % 60}m`;
   if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
   return `${seconds}s`;
+}
+
+export function roleUpdateEmbed(data: RoleUpdateLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("roles")).setTitle(t("logging.roles.update.title")).setDescription(t("logging.roles.update.description", { user: `<@${data.userId}>` })).addFields({ name: t("logging.roles.update.added"), value: data.addedRoles.join(", ") || t("logging.none"), inline: true }, { name: t("logging.roles.update.removed"), value: data.removedRoles.join(", ") || t("logging.none"), inline: true }).setTimestamp(data.timestamp);
+}
+export function channelCreateEmbed(data: ChannelEventLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("channels")).setTitle(t("logging.channels.create.title")).setDescription(t("logging.channels.create.description", { channel: `<#${data.channelId}>` })).setTimestamp(data.timestamp);
+}
+export function channelDeleteEmbed(data: ChannelEventLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("channels")).setTitle(t("logging.channels.delete.title")).setDescription(t("logging.channels.delete.description", { name: data.channelName })).setTimestamp(data.timestamp);
+}
+export function channelUpdateEmbed(data: ChannelEventLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("channels")).setTitle(t("logging.channels.update.title")).setDescription(t("logging.channels.update.description", { channel: `<#${data.channelId}>` })).setTimestamp(data.timestamp);
+}
+export function voiceJoinEmbed(data: VoiceEventLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("voice")).setTitle(t("logging.voice.join.title")).setDescription(t("logging.voice.join.description", { user: `<@${data.userId}>`, channel: data.channelName })).setTimestamp(data.timestamp);
+}
+export function voiceLeaveEmbed(data: VoiceEventLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("voice")).setTitle(t("logging.voice.leave.title")).setDescription(t("logging.voice.leave.description", { user: `<@${data.userId}>`, channel: data.channelName })).setTimestamp(data.timestamp);
+}
+export function voiceMoveEmbed(data: VoiceEventLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("voice")).setTitle(t("logging.voice.move.title")).setDescription(t("logging.voice.move.description", { user: `<@${data.userId}>`, channel: data.channelName })).setTimestamp(data.timestamp);
+}
+export function voiceMuteEmbed(data: VoiceEventLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("voice")).setTitle(t("logging.voice.mute.title")).setDescription(t("logging.voice.mute.description", { user: `<@${data.userId}>` })).setTimestamp(data.timestamp);
+}
+export function voiceDeafenEmbed(data: VoiceEventLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("voice")).setTitle(t("logging.voice.deafen.title")).setDescription(t("logging.voice.deafen.description", { user: `<@${data.userId}>` })).setTimestamp(data.timestamp);
+}
+export function inviteCreateEmbed(data: InviteEventLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("invites")).setTitle(t("logging.invites.create.title")).setDescription(t("logging.invites.create.description", { code: data.code })).setTimestamp(data.timestamp);
+}
+export function inviteDeleteEmbed(data: InviteEventLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("invites")).setTitle(t("logging.invites.delete.title")).setDescription(t("logging.invites.delete.description", { code: data.code })).setTimestamp(data.timestamp);
+}
+export function guildUpdateEmbed(data: GuildUpdateLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("server")).setTitle(t("logging.server.update.title")).setDescription(data.changes.join("\n")).setTimestamp(data.timestamp);
+}
+export function emojiUpdateEmbed(data: EmojiUpdateLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
+  return new EmbedBuilder().setColor(getCategoryColor("server")).setTitle(t("logging.emoji.update.title")).setDescription(data.changes.join("\n")).setTimestamp(data.timestamp);
 }

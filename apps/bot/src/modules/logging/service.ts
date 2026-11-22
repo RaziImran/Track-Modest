@@ -230,3 +230,59 @@ export function extractMessageData(message: { content: string | null; attachment
 export function getMessageUrl(guildId: string, channelId: string, messageId: string): string {
   return `https://discord.com/channels/${guildId}/${channelId}/${messageId}`;
 }
+
+export interface RoleUpdateLogData {
+  guildId: string;
+  userId: string;
+  userTag: string;
+  userAvatarUrl: string | null;
+  addedRoles: string[];
+  removedRoles: string[];
+  timestamp: number;
+}
+
+export interface ChannelEventLogData {
+  guildId: string;
+  channelId: string;
+  channelName: string;
+  type: string;
+  timestamp: number;
+}
+
+export interface VoiceEventLogData {
+  guildId: string;
+  userId: string;
+  userTag: string;
+  userAvatarUrl: string | null;
+  type: string;
+  channelName: string | null;
+  timestamp: number;
+}
+
+export interface InviteEventLogData {
+  guildId: string;
+  code: string;
+  inviterTag: string | null;
+  uses: number;
+  maxUses: number | null;
+  timestamp: number;
+}
+
+export interface GuildUpdateLogData {
+  guildId: string;
+  changes: string[];
+  timestamp: number;
+}
+
+export interface EmojiUpdateLogData {
+  guildId: string;
+  changes: string[];
+  timestamp: number;
+}
+
+export function formatRoleUpdate(data: RoleUpdateLogData): RoleUpdateLogData { return data; }
+export function formatChannelEvent(data: ChannelEventLogData): ChannelEventLogData { return data; }
+export function formatVoiceEvent(data: VoiceEventLogData): VoiceEventLogData { return data; }
+export function formatInviteEvent(data: InviteEventLogData): InviteEventLogData { return data; }
+export function formatGuildUpdate(data: GuildUpdateLogData): GuildUpdateLogData { return data; }
+export function formatEmojiUpdate(data: EmojiUpdateLogData): EmojiUpdateLogData { return data; }
