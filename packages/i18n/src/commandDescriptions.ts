@@ -35,6 +35,7 @@ export const commandDescriptions: CommandDescriptionMap = {
   nick: { en: "Change another member's server nickname." },
   menu: { en: "Open your Track Modest hub — profile, quests, games, and more." },
   strictness: { en: "Manage temporary strictness boosts (admin only)." },
+  settings: { en: "Configure server settings via an interactive panel." },
 };
 
 /**

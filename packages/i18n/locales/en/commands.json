@@ -18,6 +18,9 @@
     },
     "hub": {
       "menu": { "description": "Open your Track Modest hub — profile, quests, games, and more." }
+    },
+    "settings": {
+      "settings": { "description": "Configure server settings via an interactive panel." }
     }
   }
 }

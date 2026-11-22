@@ -1,0 +1,16 @@
+{
+  "settings": {
+    "error": {
+      "notInServer": "Settings must be configured in a server."
+    },
+    "panel": {
+      "title": "Server Settings",
+      "description": "Choose a category below to view and change its settings.",
+      "selectCategory": "Select a category..."
+    },
+    "history": {
+      "title": "Config Change History",
+      "empty": "No config changes recorded yet."
+    }
+  }
+}
