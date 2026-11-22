@@ -13,6 +13,7 @@ import "./modules/verification/index.js";
 import "./modules/antinuke/index.js";
 import "./modules/compromised/index.js";
 import "./modules/risk/index.js";
+import "./modules/reviewqueue/index.js";
 import "./events/messageUpdate.js";
 import "./events/messageDelete.js";
 import "./events/messageDeleteBulk.js";

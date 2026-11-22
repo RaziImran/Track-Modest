@@ -652,3 +652,34 @@ model DailyGuildStat {
   hourly       Json   @default("[]") // 24 message counts
   @@id([guildId, date])
 }
+
+// ───────────────────────────── MOD REVIEW QUEUE ─────────────────────────────
+
+model ReviewItem {
+  id          BigInt   @id @default(autoincrement())
+  guildId     String
+  channelId   String          // mod-queue channel where item is posted
+  messageId   String?         // the posted message id (for claim buttons)
+  type        String          // "automod_ai" | "automod_media" | "report_escalated" | "held_message"
+  targetUserId String?
+  targetUserTag String?
+  evidence    Json            // flexible evidence payload
+  aiExplanation String?
+  status      ReviewStatus  @default(PENDING)
+  claimedBy   String?         // staff member id who claimed it
+  claimedAt   DateTime?
+  resolvedAt  DateTime?
+  resolvedBy  String?
+  resolution  String?         // "approve" | "reject" | "ignore"
+  repostedAt  DateTime?       // last time item was re-posted (24h rule)
+  createdAt   DateTime @default(now())
+  @@index([guildId, status])
+  @@index([guildId, createdAt])
+}
+
+enum ReviewStatus {
+  PENDING
+  CLAIMED
+  RESOLVED
+  EXPIRED
+}

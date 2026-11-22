@@ -419,6 +419,21 @@
       "error": {
         "notInServer": "This must be used in a server."
       }
+    },
+    "reviewqueue": {
+      "title": "Mod Review Queue",
+      "itemPosted": "New review queue item posted.",
+      "claimed": "Claimed by {user}.",
+      "resolved": "Resolved as {resolution}.",
+      "button:claim": "Claim",
+      "button:approve": "Approve",
+      "button:reject": "Reject",
+      "button:ignore": "Ignore",
+      "error": {
+        "notInServer": "This must be used in a server.",
+        "alreadyClaimed": "This item has already been claimed.",
+        "alreadyResolved": "This item has already been resolved."
+      }
     }
   }
 }
