@@ -280,6 +280,21 @@
       "error": {
         "notInServer": "This command must be used in a server."
       }
+    },
+    "note": {
+      "title": "Moderation Notes — {user}",
+      "noNotes": "No notes",
+      "noNotesBody": "This user has no moderation notes.",
+      "success": {
+        "added": "Note added for {target}.",
+        "deleted": "Note deleted."
+      },
+      "error": {
+        "notInServer": "This command must be used in a server.",
+        "notFound": "Note not found or does not belong to this server.",
+        "cannotDelete": "You cannot delete this note.",
+        "hierarchy": "{message}"
+      }
     }
   }
 }

@@ -12,6 +12,7 @@ import { lockdownCommand } from "./commands/lockdown.js";
 import { nickCommand } from "./commands/nick.js";
 import { historyCommand } from "./commands/history.js";
 import { modstatsCommand } from "./commands/modstats.js";
+import { noteCommand } from "./commands/note.js";
 import {
   moderateUserCommand,
   moderateMessageCommand,
@@ -48,6 +49,7 @@ registerCommand(lockdownCommand, import.meta.url);
 registerCommand(nickCommand, import.meta.url);
 registerCommand(historyCommand, import.meta.url);
 registerCommand(modstatsCommand, import.meta.url);
+registerCommand(noteCommand, import.meta.url);
 registerCommand(moderateUserCommand, import.meta.url);
 registerCommand(moderateMessageCommand, import.meta.url);
 registerCommand(reportMessageCommand, import.meta.url);

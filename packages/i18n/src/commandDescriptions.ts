@@ -38,6 +38,7 @@ export const commandDescriptions: CommandDescriptionMap = {
   settings: { en: "Configure server settings via an interactive panel." },
   history: { en: "Show a member's moderation case history and active warning points." },
   modstats: { en: "Moderation statistics for this server." },
+  note: { en: "Add, list, or delete moderation notes for a member." },
 };
 
 /**
