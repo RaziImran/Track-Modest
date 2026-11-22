@@ -221,3 +221,57 @@ export function isMessageTooOld(timestamp: Date | string): boolean {
   const msgTime = typeof timestamp === "string" ? new Date(timestamp).getTime() : timestamp.getTime();
   return Date.now() - msgTime > MESSAGE_AGE_LIMIT_MS;
 }
+
+// ── MOD-08 schemas ──
+
+export const ChannelSubcommandSchema = z.enum(["lock", "unlock", "slowmode"]);
+
+export const ChannelCommandInputSchema = z.object({
+  subcommand: ChannelSubcommandSchema,
+  channel: z.string().optional(),
+  reason: z.string().max(1000, "Reason too long").optional(),
+  duration: z.string().optional(),
+  seconds: z.coerce.number().int().min(0, "Seconds must be between 0 and 21600").max(21600, "Seconds must be between 0 and 21600").optional(),
+});
+
+export type ChannelCommandInput = z.infer<typeof ChannelCommandInputSchema>;
+
+export function validateChannelInput(raw: unknown): ChannelCommandInput | { error: string } {
+  const parsed = ChannelCommandInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  return parsed.data;
+}
+
+export const LockdownSubcommandSchema = z.enum(["start", "end"]);
+
+export const LockdownCommandInputSchema = z.object({
+  subcommand: LockdownSubcommandSchema,
+  reason: z.string().max(1000, "Reason too long").optional(),
+});
+
+export type LockdownCommandInput = z.infer<typeof LockdownCommandInputSchema>;
+
+export function validateLockdownInput(raw: unknown): LockdownCommandInput | { error: string } {
+  const parsed = LockdownCommandInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  return parsed.data;
+}
+
+export const NickCommandInputSchema = z.object({
+  user: z.string().min(1, "User is required"),
+  nickname: z.string().max(32, "Nickname too long").optional().default(""),
+});
+
+export type NickCommandInput = z.infer<typeof NickCommandInputSchema>;
+
+export function validateNickInput(raw: unknown): NickCommandInput | { error: string } {
+  const parsed = NickCommandInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  return parsed.data;
+}

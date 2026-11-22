@@ -132,6 +132,70 @@
         "tooOld": "{count} message(s) were older than 14 days and could not be bulk-deleted (Discord limitation)."
       },
       "success": "Purged **{deletedCount}** message(s) ({subcommand}) in {channel}.{tooOld}"
+    },
+    "channel": {
+      "modlog": {
+        "lock": {
+          "title": "Channel locked",
+          "body": "{channel} was locked by {moderator}\n**Reason:** {reason}"
+        },
+        "unlock": {
+          "title": "Channel unlocked",
+          "body": "{channel} was unlocked by {moderator}"
+        },
+        "slowmode": {
+          "title": "Slowmode changed",
+          "body": "{channel} slowmode set to {seconds}s by {moderator}"
+        }
+      },
+      "error": {
+        "notInServer": "This command must be used in a server.",
+        "channelNotFound": "Channel not found.",
+        "missingPermissions": "I'm missing permissions to do that. Please move my role above theirs in Server Settings → Roles.",
+        "unknownSubcommand": "Unknown subcommand."
+      },
+      "success": {
+        "lock": "{channel} is now locked{duration}.",
+        "unlock": "{channel} is now unlocked.",
+        "slowmode": "{channel} slowmode set to {seconds}."
+      }
+    },
+    "lockdown": {
+      "modlog": {
+        "start": {
+          "title": "Lockdown started",
+          "body": "{moderator} locked down {lockedCount} channel(s) ({failedCount} failed).\n**Reason:** {reason}"
+        },
+        "end": {
+          "title": "Lockdown ended",
+          "body": "{moderator} restored {restoredCount} channel(s) ({failedRestoreCount} failed).\n**Reason:** {reason}"
+        }
+      },
+      "error": {
+        "notInServer": "This command must be used in a server.",
+        "unknownSubcommand": "Unknown subcommand."
+      },
+      "success": {
+        "start": "Locked down {lockedCount} channel(s).",
+        "end": "Restored {restoredCount} channel(s)."
+      }
+    },
+    "nick": {
+      "modlog": {
+        "title": "Nickname changed",
+        "body": "{target}'s nickname was changed to {nickname} by {moderator}"
+      },
+      "error": {
+        "notInServer": "This command must be used in a server.",
+        "userNotFound": "User not found.",
+        "cannotNickBot": "I cannot change a bot's nickname.",
+        "cannotNickOwner": "I cannot change the server owner's nickname.",
+        "cannotNickSelf": "Use your own nickname settings to change your nickname.",
+        "missingPermissions": "I'm missing permissions to do that. Please grant me the Manage Nicknames permission."
+      },
+      "success": {
+        "changed": "{target}'s nickname is now {nickname}."
+      }
     }
   }
 }

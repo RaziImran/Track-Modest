@@ -30,6 +30,9 @@ export const commandDescriptions: CommandDescriptionMap = {
   softban: { en: "Softban a user (ban with 1 day message deletion, then unban)." },
   unban: { en: "Unban a user from the server." },
   purge: { en: "Delete messages in bulk with optional filters." },
+  lock: { en: "Lock, unlock, or set slowmode on a channel." },
+  lockdown: { en: "Lock down or unlock all public text channels in the server." },
+  nick: { en: "Change another member's server nickname." },
   menu: { en: "Open your Track Modest hub — profile, quests, games, and more." },
   strictness: { en: "Manage temporary strictness boosts (admin only)." },
 };

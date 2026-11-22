@@ -8,7 +8,10 @@
       "ban": { "description": "Ban a user from the server (optionally temporary)." },
       "softban": { "description": "Softban a user (ban with 1 day message deletion, then unban)." },
       "unban": { "description": "Unban a user from the server." },
-      "purge": { "description": "Delete messages in bulk with optional filters." }
+      "purge": { "description": "Delete messages in bulk with optional filters." },
+      "lock": { "description": "Lock, unlock, or set slowmode on a channel." },
+      "lockdown": { "description": "Lock down or unlock all public text channels in the server." },
+      "nick": { "description": "Change another member's server nickname." }
     },
     "config": {
       "strictness": { "description": "Manage temporary strictness boosts (admin only)." }
