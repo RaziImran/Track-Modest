@@ -15,6 +15,7 @@ import "./modules/compromised/index.js";
 import "./modules/risk/index.js";
 import "./modules/reviewqueue/index.js";
 import "./modules/raidprediction/index.js";
+import "./modules/shadowmode/index.js";
 import "./events/messageUpdate.js";
 import "./events/messageDelete.js";
 import "./events/messageDeleteBulk.js";

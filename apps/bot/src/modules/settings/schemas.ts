@@ -46,6 +46,7 @@ export const CATEGORY_SETTINGS: Record<SettingsCategory, string[]> = {
     "automod.media.nsfwScan",
     "automod.firstAction",
     "automod.timeoutSec",
+    "shadow.mode",
   ],
   Logging: ["logging.verbosity", "modQueueChannelId"],
   Welcome: [],
@@ -113,6 +114,7 @@ export const SETTING_LABELS: Record<string, string> = {
   "automod.media.nsfwScan": "AutoMod media NSFW scan",
   "automod.firstAction": "AutoMod first action",
   "automod.timeoutSec": "AutoMod timeout (sec)",
+  "shadow.mode": "Shadow mode duration (days)",
 };
 
 export const MODULE_LABELS: Record<string, string> = {

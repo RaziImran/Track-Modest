@@ -434,6 +434,20 @@
         "alreadyClaimed": "This item has already been claimed.",
         "alreadyResolved": "This item has already been resolved."
       }
+    },
+    "shadowmode": {
+      "title": "Shadow Mode",
+      "hitLogged": "Shadow hit logged (no action taken).",
+      "enabled": "Shadow mode enabled for rule {rule} ({days} days).",
+      "extended": "Shadow mode extended for rule {rule} ({days} more days).",
+      "disabled": "Shadow mode disabled for rule {rule}.",
+      "expired": "Shadow mode expired for rule {rule}. Would have acted {count} time(s), {fp} marked false positive.",
+      "button:enable": "Enable",
+      "button:extend": "Extend",
+      "button:discard": "Discard",
+      "error": {
+        "notInServer": "This must be used in a server."
+      }
     }
   }
 }

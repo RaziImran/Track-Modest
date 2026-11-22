@@ -222,18 +222,22 @@ enum AppealStatus {
 }
 
 model AutomodRule {              // custom rules beyond the built-in profile rules
-  id         Int      @id @default(autoincrement())
-  guildId    String
-  name       String
-  enabled    Boolean  @default(true)
-  shadow     Boolean  @default(false)   // shadow mode: log only (Section 15.4)
-  trigger    Json                       // { type: "regex"|"keywords"|"links"|..., ... }
-  actions    Json                       // [{ type: "delete" }, { type: "timeout", seconds: 600 }]
-  exemptRoles    String[]
-  exemptChannels String[]
-  createdBy  String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id                  Int      @id @default(autoincrement())
+  guildId             String
+  name                String
+  enabled             Boolean  @default(true)
+  shadow              Boolean  @default(false)   // shadow mode: log only (Section 15.4)
+  shadowStartedAt     DateTime? // when shadow mode was enabled
+  shadowUntil         DateTime? // when shadow mode expires
+  shadowHitCount      Int      @default(0)       // hits recorded while in shadow mode
+  shadowFalsePositive Int      @default(0)       // hits marked false positive by mods
+  trigger             Json                       // { type: "regex"|"keywords"|"links"|..., ... }
+  actions             Json                       // [{ type: "delete" }, { type: "timeout", seconds: 600 }]
+  exemptRoles         String[]
+  exemptChannels      String[]
+  createdBy           String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
   @@index([guildId])
 }
 
