@@ -189,6 +189,7 @@ export function getLoggingConfig(overrides: Record<string, unknown>): LoggingCon
     ignoredChannels: (logging["ignoredChannels"] as string[]) ?? [],
     ignoredRoles: (logging["ignoredRoles"] as string[]) ?? [],
     ghostPingNotify: (logging["ghostPingNotify"] as boolean) ?? false,
+    webhookEnabled: (logging["webhookEnabled"] as boolean) ?? false,
   };
 }
 
@@ -286,3 +287,33 @@ export function formatVoiceEvent(data: VoiceEventLogData): VoiceEventLogData { r
 export function formatInviteEvent(data: InviteEventLogData): InviteEventLogData { return data; }
 export function formatGuildUpdate(data: GuildUpdateLogData): GuildUpdateLogData { return data; }
 export function formatEmojiUpdate(data: EmojiUpdateLogData): EmojiUpdateLogData { return data; }
+export function getLogChannel(guildConfig: GuildLoggingConfig, category: string): string | null {
+  return resolveLogChannel(guildConfig, category);
+}
+
+export function isIgnored(
+  guildConfig: GuildLoggingConfig,
+  channelId: string,
+  roleId: string | string[],
+): boolean {
+  const roles = Array.isArray(roleId) ? roleId : [roleId];
+  if (isIgnoredChannel(guildConfig, channelId)) return true;
+  if (isIgnoredRole(guildConfig, roles)) return true;
+  return false;
+}
+
+export function shouldLog(
+  guildConfig: GuildLoggingConfig,
+  category: string,
+  verbosity: "all" | "important",
+): boolean {
+  if (!shouldLogCategory(guildConfig, category)) return false;
+  const configured = getVerbosity(guildConfig);
+  if (verbosity === "important" && configured !== "all" && configured !== "important") return false;
+  return true;
+}
+
+export function getWebhookEnabled(guildConfig: GuildLoggingConfig): boolean {
+  const loggingConfig = getLoggingConfig(guildConfig.overrides);
+  return (loggingConfig as LoggingConfig & { webhookEnabled?: boolean }).webhookEnabled ?? false;
+}

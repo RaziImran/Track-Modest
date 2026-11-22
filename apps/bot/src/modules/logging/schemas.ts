@@ -28,6 +28,7 @@ export const LoggingConfigSchema = z.object({
   ignoredChannels: LoggingIgnoredChannelsSchema.default([]),
   ignoredRoles: LoggingIgnoredRolesSchema.default([]),
   ghostPingNotify: z.boolean().default(false),
+  webhookEnabled: z.boolean().default(false),
 });
 export type LoggingConfig = z.infer<typeof LoggingConfigSchema>;
 
