@@ -140,6 +140,47 @@ export class ModerationService {
     return { caseNumber, caseId: created.id, type: durationSec ? "TEMPBAN" : "BAN", durationSec };
   }
 
+  async applySoftBan(
+    guildId: string,
+    targetId: string,
+    moderatorId: string,
+    reason: string,
+  ): Promise<{ caseNumber: number; caseId: number }> {
+    const caseNumber = await this.deps.incrementCaseCounter(guildId);
+    const created = await this.deps.createCase({
+      guildId,
+      type: "SOFTBAN",
+      targetId,
+      moderatorId,
+      reason,
+      points: 0,
+      caseNumber,
+      automatic: false,
+    });
+    await this.deps.applyRepPenalty(guildId, targetId, -100);
+    return { caseNumber, caseId: created.id };
+  }
+
+  async applyUnBan(
+    guildId: string,
+    targetId: string,
+    moderatorId: string,
+    reason: string,
+  ): Promise<{ caseNumber: number; caseId: number }> {
+    const caseNumber = await this.deps.incrementCaseCounter(guildId);
+    const created = await this.deps.createCase({
+      guildId,
+      type: "UNBAN",
+      targetId,
+      moderatorId,
+      reason,
+      points: 0,
+      caseNumber,
+      automatic: false,
+    });
+    return { caseNumber, caseId: created.id };
+  }
+
   async applyUnTimeout(
     guildId: string,
     targetId: string,
