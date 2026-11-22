@@ -5,6 +5,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
+import { localizationsFor } from "@modest/i18n";
 import type { BotCommand, CommandContext } from "@modest/shared";
 import { checkHierarchy } from "@modest/shared";
 import { validateBanInput } from "../schemas.js";
@@ -125,6 +126,7 @@ export const banCommand: BotCommand = {
   data: new SlashCommandBuilder()
     .setName("ban")
     .setDescription("Ban a user from the server (optionally temporary).")
+    .setDescriptionLocalizations(localizationsFor("ban"))
     .addUserOption((opt) =>
       opt
         .setName("user")

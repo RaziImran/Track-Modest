@@ -5,6 +5,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
+import { localizationsFor } from "@modest/i18n";
 import type { BotCommand, CommandContext } from "@modest/shared";
 import { checkHierarchy } from "@modest/shared";
 import { validateKickInput } from "../schemas.js";
@@ -94,6 +95,7 @@ export const kickCommand: BotCommand = {
   data: new SlashCommandBuilder()
     .setName("kick")
     .setDescription("Kick a member from the server.")
+    .setDescriptionLocalizations(localizationsFor("kick"))
     .addUserOption((opt) => opt.setName("user").setDescription("Member to kick").setRequired(true))
     .addStringOption((opt) =>
       opt

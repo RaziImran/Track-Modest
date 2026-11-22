@@ -25,7 +25,7 @@
       "@modest/db": ["packages/db/src/index.js"],
       "@modest/config-engine": ["packages/config-engine/src/index.js"],
       "@modest/ai": ["packages/ai/src/index.js"],
-      "@modest/i18n": ["packages/i18n/locales/en/index.js"],
+      "@modest/i18n": ["packages/i18n/src/index.js"],
       "@modest/cards": ["packages/cards/src/index.js"],
       "@modest/game-data": ["packages/game-data/src/index.js"]
     },

@@ -1,4 +1,5 @@
 import { MessageFlags, SlashCommandBuilder } from "discord.js";
+import { localizationsFor } from "@modest/i18n";
 import type { BotCommand, CommandContext } from "@modest/shared";
 import {
   buildPanel,
@@ -108,7 +109,8 @@ function buildButtonRows(buttons: HubButton[], t: (key: string) => string): unkn
 export const menuCommand: BotCommand = {
   data: new SlashCommandBuilder()
     .setName("menu")
-    .setDescription("Open your Track Modest hub — profile, quests, games, and more."),
+    .setDescription("Open your Track Modest hub — profile, quests, games, and more.")
+    .setDescriptionLocalizations(localizationsFor("menu")),
   module: "core",
   staffLevel: "none",
   defer: "ephemeral",

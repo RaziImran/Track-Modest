@@ -1,0 +1,16 @@
+{
+  "commands": {
+    "moderation": {
+      "warn": { "description": "Warn a member and add warning points." },
+      "timeout": { "description": "Temporarily mute a member (Discord timeout)." },
+      "untimeout": { "description": "Remove a member's timeout." },
+      "kick": { "description": "Kick a member from the server." },
+      "ban": { "description": "Ban a user from the server (optionally temporary)." },
+      "softban": { "description": "Softban a user (ban with 1 day message deletion, then unban)." },
+      "unban": { "description": "Unban a user from the server." }
+    },
+    "hub": {
+      "menu": { "description": "Open your Track Modest hub — profile, quests, games, and more." }
+    }
+  }
+}

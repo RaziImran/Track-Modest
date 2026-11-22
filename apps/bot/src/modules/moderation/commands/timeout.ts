@@ -5,6 +5,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
+import { localizationsFor } from "@modest/i18n";
 import type { BotCommand, CommandContext } from "@modest/shared";
 import { checkHierarchy, levelSatisfies } from "@modest/shared";
 import {
@@ -167,6 +168,7 @@ export const timeoutCommand: BotCommand = {
   data: new SlashCommandBuilder()
     .setName("timeout")
     .setDescription("Temporarily mute a member (Discord timeout).")
+    .setDescriptionLocalizations(localizationsFor("timeout"))
     .addUserOption((opt) => opt.setName("user").setDescription("Member to time out").setRequired(true))
     .addStringOption((opt) =>
       opt
@@ -340,6 +342,7 @@ export const untimeoutCommand: BotCommand = {
   data: new SlashCommandBuilder()
     .setName("untimeout")
     .setDescription("Remove a member's timeout.")
+    .setDescriptionLocalizations(localizationsFor("untimeout"))
     .addUserOption((opt) => opt.setName("user").setDescription("Member to remove the timeout from").setRequired(true))
     .addStringOption((opt) =>
       opt

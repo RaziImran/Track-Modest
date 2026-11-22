@@ -5,6 +5,7 @@ import {
   EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
+import { localizationsFor } from "@modest/i18n";
 import type { BotCommand, CommandContext } from "@modest/shared";
 import { checkHierarchy } from "@modest/shared";
 import { validateWarnInput } from "../schemas.js";
@@ -120,6 +121,7 @@ export const warnCommand: BotCommand = {
   data: new SlashCommandBuilder()
     .setName("warn")
     .setDescription("Warn a member and add warning points.")
+    .setDescriptionLocalizations(localizationsFor("warn"))
     .addUserOption((opt) => opt.setName("user").setDescription("Member to warn").setRequired(true))
     .addStringOption((opt) =>
       opt
