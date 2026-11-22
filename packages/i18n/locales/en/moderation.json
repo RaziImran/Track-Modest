@@ -482,6 +482,8 @@
       "check:newlines": "Too many newlines ({count} > {max}).",
       "check:zalgo": "Zalgo text detected.",
       "check:custom": "Custom rule matched: {ruleName}.",
+      "check:ai_review": "AI context review flagged this message ({category}, severity {severity}).",
+      "check:media_scan": "Media scan flagged an attachment ({category}).",
       "error": {
         "notInServer": "This must be used in a server."
       }

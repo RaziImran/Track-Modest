@@ -157,9 +157,10 @@ describe("SetupService", () => {
 
       const result = await service.getOrCreateState("g1", "u1");
       expect(deps.setSetupState).toHaveBeenCalledTimes(1);
-      expect(deps.setSetupState.mock.calls[0][0]).toBe("g1");
-      expect(deps.setSetupState.mock.calls[0][1]).toBe("u1");
-      expect(deps.setSetupState.mock.calls[0][2]).toMatchObject({ step: 1 });
+      const call0 = deps.setSetupState.mock.calls[0]!;
+      expect(call0[0]).toBe("g1");
+      expect(call0[1]).toBe("u1");
+      expect(call0[2]).toMatchObject({ step: 1 });
       expect(result.step).toBe(1);
       expect(result.step).toBe(1);
     });
@@ -183,9 +184,10 @@ describe("SetupService", () => {
       const result = await service.updateState("g1", "u1", { sizeTier: "MEDIUM" });
       expect(result.sizeTier).toBe("MEDIUM");
       expect(deps.setSetupState).toHaveBeenCalledTimes(1);
-      expect(deps.setSetupState.mock.calls[0][0]).toBe("g1");
-      expect(deps.setSetupState.mock.calls[0][1]).toBe("u1");
-      expect(deps.setSetupState.mock.calls[0][2]).toMatchObject({ sizeTier: "MEDIUM" });
+      const call0 = deps.setSetupState.mock.calls[0]!;
+      expect(call0[0]).toBe("g1");
+      expect(call0[1]).toBe("u1");
+      expect(call0[2]).toMatchObject({ sizeTier: "MEDIUM" });
     });
   });
 });

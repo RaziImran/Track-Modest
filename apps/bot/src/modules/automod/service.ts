@@ -29,6 +29,8 @@ export interface AutomodConfig {
   phishingEnabled: boolean;
   publicNotice: boolean;
   useNative: boolean;
+  aiEnabled: boolean;
+  mediaScanEnabled: boolean;
 }
 
 export interface AutomodMessageInput {
@@ -50,6 +52,8 @@ export interface AutomodMessageInput {
   mentionHere: boolean;
   messageId: string;
   timestamp: Date;
+  channelIsNsfw: boolean; // whether the channel is NSFW (for media scan gating)
+  replyChainPriorHits: boolean; // whether this is a reply to a message with prior automod hits
 }
 
 export interface CheckResult {
@@ -70,6 +74,14 @@ export interface AutomodResponse {
   shouldLog: boolean;
   shouldCreateCase: boolean;
   shadow: boolean;
+  /** Post this hit to the Mod Review Queue (AM-12/AM-13). */
+  shouldPostToReviewQueue: boolean;
+  /** Review item type when shouldPostToReviewQueue is true. */
+  reviewType?: "automod_ai" | "automod_media";
+  /** Evidence to attach to the review item. */
+  reviewEvidence?: unknown;
+  /** AI explanation text for automod_ai items. */
+  reviewAiExplanation?: string | null;
 }
 
 // Severity ladder for repeat escalation (low → high)
@@ -154,6 +166,16 @@ export interface AutomodServiceDeps {
   incrementRepeatHits: (guildId: string, userId: string, windowSec: number) => Promise<number>;
   getRepeatHits: (guildId: string, userId: string) => Promise<number>;
   isPhishDomain: (domain: string) => Promise<boolean>;
+  /** AI context review classifier (AM-12). Returns null when budget exhausted or AI unavailable. */
+  aiClassify?: (input: {
+    content: string;
+    riskSignals: string[];
+  }) => Promise<{ category: string; severity: number; explanation: string } | null>;
+  /** Media scan classifier (AM-13). */
+  mediaClassify?: (input: {
+    attachments: Array<{ filename: string; size: number; contentType?: string }>;
+    channelIsNsfw: boolean;
+  }) => Promise<Array<{ category: "nsfw" | "gore" | "scam_qr" | "none"; confidence: number }>>;
 }
 
 export class AutomodService {
@@ -232,7 +254,21 @@ export class AutomodService {
       return this.hitResponse(customHit.ruleKey, customHit.action, customHit.reason, customHit.details, customHit.shadow);
     }
 
-    // Checks 11–12 (AI context review, media scan) are Phase 7 — interfaces only, no-op here.
+    // Check 11: AI context review (AM-12)
+    if (this.config.aiEnabled) {
+      const aiHit = await this.checkAIContextReview(input);
+      if (aiHit.fired) {
+        return aiHit.response;
+      }
+    }
+
+    // Check 12: Media scan (AM-13)
+    if (this.config.mediaScanEnabled) {
+      const mediaHit = await this.checkMediaScan(input);
+      if (mediaHit.fired) {
+        return mediaHit.response;
+      }
+    }
 
     return this.noneResponse();
   }
@@ -531,6 +567,165 @@ export class AutomodService {
     return { fired: false, ruleKey: "", action: "none", reason: "", shadow: false };
   }
 
+  // ───────────────────────────── Check 11: AI context review (AM-12) ─────────────────────────────
+
+  /** Detect risk signals in message content that warrant AI review. */
+  private detectRiskSignals(content: string): string[] {
+    const signals: string[] = [];
+    // Second-person insults: "you are X", "you suck"
+    if (/\byou\s+(are\s+)?(stupid|idiot|dumb|moron|jerk|fool)\b|\byou\s+suck\b/i.test(content)) {
+      signals.push("second_person_insult");
+    }
+    // Threat keywords
+    if (/\b(kill|threaten|hurt|destroy|attack|beat.?up|harm)\b/i.test(content)) {
+      signals.push("threat");
+    }
+    // Self-harm keywords
+    if (/\b(suicide|self.?harm|kill myself|end it all|cut myself|want to die)\b/i.test(content)) {
+      signals.push("self_harm");
+    }
+    return signals;
+  }
+
+  async checkAIContextReview(input: AutomodMessageInput): Promise<{
+    fired: boolean;
+    response: AutomodResponse;
+  }> {
+    if (!this.deps.aiClassify) {
+      return { fired: false, response: this.noneResponse() };
+    }
+
+    const riskSignals = this.detectRiskSignals(input.content);
+    if (riskSignals.length === 0 && !input.replyChainPriorHits) {
+      return { fired: false, response: this.noneResponse() };
+    }
+
+    let classification;
+    try {
+      classification = await this.deps.aiClassify({
+        content: input.content,
+        riskSignals,
+      });
+    } catch {
+      // AI call failed — skip silently, do not block the message
+      return { fired: false, response: this.noneResponse() };
+    }
+
+    // Budget exhausted or AI unavailable — skip silently (§11.6)
+    if (!classification) {
+      return { fired: false, response: this.noneResponse() };
+    }
+
+    // Self-harm: notify mods with gentle-response template + crisis resources; never punish.
+    if (classification.category === "self_harm") {
+      return {
+        fired: true,
+        response: {
+          action: "alert",
+          ruleKey: "automod:ai_review",
+          reason: "automod:check:ai_review",
+          details: { category: classification.category, explanation: classification.explanation, riskSignals },
+          shouldDelete: false,
+          shouldDm: false,
+          shouldLog: true,
+          shouldCreateCase: false,
+          shadow: false,
+          shouldPostToReviewQueue: true,
+          reviewType: "automod_ai",
+          reviewEvidence: { category: classification.category, severity: classification.severity, riskSignals },
+          reviewAiExplanation: classification.explanation,
+        },
+      };
+    }
+
+    // Severity >= 2 → post to Mod Review Queue with Delete/Warn/Timeout/Dismiss buttons.
+    // Never auto-punish from AI.
+    if (classification.severity >= 2) {
+      return {
+        fired: true,
+        response: {
+          action: "alert",
+          ruleKey: "automod:ai_review",
+          reason: "automod:check:ai_review",
+          details: { category: classification.category, severity: classification.severity, explanation: classification.explanation, riskSignals },
+          shouldDelete: false,
+          shouldDm: false,
+          shouldLog: true,
+          shouldCreateCase: false,
+          shadow: false,
+          shouldPostToReviewQueue: true,
+          reviewType: "automod_ai",
+          reviewEvidence: { category: classification.category, severity: classification.severity, explanation: classification.explanation, riskSignals },
+          reviewAiExplanation: classification.explanation,
+        },
+      };
+    }
+
+    return { fired: false, response: this.noneResponse() };
+  }
+
+  // ───────────────────────────── Check 12: Media scan (AM-13) ─────────────────────────────
+
+  async checkMediaScan(input: AutomodMessageInput): Promise<{
+    fired: boolean;
+    response: AutomodResponse;
+  }> {
+    if (!this.deps.mediaClassify) {
+      return { fired: false, response: this.noneResponse() };
+    }
+
+    const imageAttachments = input.attachments.filter(
+      (a) => (a.contentType ?? "").startsWith("image/"),
+    );
+    if (imageAttachments.length === 0) {
+      return { fired: false, response: this.noneResponse() };
+    }
+
+    // NSFW channels are excluded from media scan (§11.7)
+    if (input.channelIsNsfw) {
+      return { fired: false, response: this.noneResponse() };
+    }
+
+    let results;
+    try {
+      results = await this.deps.mediaClassify({
+        attachments: imageAttachments,
+        channelIsNsfw: input.channelIsNsfw,
+      });
+    } catch {
+      // Vision call failed — skip silently
+      return { fired: false, response: this.noneResponse() };
+    }
+
+    // Filter to actual hits (non-none categories)
+    const hits = results.filter((r) => r.category !== "none");
+    if (hits.length === 0) {
+      return { fired: false, response: this.noneResponse() };
+    }
+
+    // Only scam_qr with high confidence auto-deletes (§11.7)
+    const scamQrHighConfidence = hits.some((r) => r.category === "scam_qr" && r.confidence >= 0.8);
+
+    return {
+      fired: true,
+      response: {
+        action: scamQrHighConfidence ? "delete" : "alert",
+        ruleKey: "automod:media_scan",
+        reason: "automod:check:media_scan",
+        details: { results: hits },
+        shouldDelete: scamQrHighConfidence,
+        shouldDm: scamQrHighConfidence,
+        shouldLog: true,
+        shouldCreateCase: false,
+        shadow: false,
+        shouldPostToReviewQueue: true,
+        reviewType: "automod_media",
+        reviewEvidence: { results: hits },
+        reviewAiExplanation: null,
+      },
+    };
+  }
+
   private matchRuleTrigger(
     trigger: AutomodRuleTrigger,
     input: AutomodMessageInput,
@@ -606,6 +801,7 @@ export class AutomodService {
       shouldLog: false,
       shouldCreateCase: false,
       shadow: false,
+      shouldPostToReviewQueue: false,
     };
   }
 
@@ -615,6 +811,10 @@ export class AutomodService {
     reason: string,
     details?: Record<string, unknown>,
     shadow = false,
+    shouldPostToReviewQueue = false,
+    reviewType?: "automod_ai" | "automod_media",
+    reviewEvidence?: unknown,
+    reviewAiExplanation?: string | null,
   ): AutomodResponse {
     const effectiveAction = action === "none" ? "delete" : action;
     return {
@@ -627,6 +827,10 @@ export class AutomodService {
       shouldLog: true,
       shouldCreateCase: effectiveAction === "warn" || effectiveAction === "timeout",
       shadow,
+      shouldPostToReviewQueue,
+      reviewType,
+      reviewEvidence,
+      reviewAiExplanation,
     };
   }
 }

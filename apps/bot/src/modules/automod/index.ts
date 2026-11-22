@@ -4,6 +4,7 @@ import { client } from "../../client.js";
 import { Events, Message } from "discord.js";
 import { AutomodRepository } from "./repository.js";
 import { AutomodService } from "./service.js";
+import { postToReviewQueue } from "../reviewqueue/index.js";
 
 const repo = new AutomodRepository({ redisUrl: process.env["REDIS_URL"] ?? "" });
 const service = new AutomodService(AutomodRepository.createServiceDeps(repo), {
@@ -24,7 +25,21 @@ const service = new AutomodService(AutomodRepository.createServiceDeps(repo), {
   phishingEnabled: true,
   publicNotice: true,
   useNative: false,
+  aiEnabled: false, // AM-12: enabled when AI module wiring is complete
+  mediaScanEnabled: false, // AM-13: enabled when vision model wiring is complete
 });
+
+// Placeholder AI/media classification deps — wired to the AI module when implemented (AI-01…).
+// Until then, these return null, causing checks 11–12 to skip silently (§11.6, §11.7).
+const aiClassify = async (): Promise<{ category: string; severity: number; explanation: string } | null> => null;
+const mediaClassify = async (): Promise<Array<{ category: "nsfw" | "gore" | "scam_qr" | "none"; confidence: number }>> => [];
+
+const serviceWithDeps = new AutomodService(
+  AutomodRepository.createServiceDeps(repo),
+  service.config,
+);
+serviceWithDeps.deps.aiClassify = aiClassify;
+serviceWithDeps.deps.mediaClassify = mediaClassify;
 
 function resolveConfigOverrides(_cfg: any): Partial<AutomodService["config"]> {
   // In the future, read automod.* overrides from ctx.config / guildConfig.
@@ -38,13 +53,18 @@ client.on(Events.MessageCreate, async (message: Message) => {
 
   // Resolve per-guild config overrides (placeholder — wired to settings later)
   const overrides = resolveConfigOverrides(message.guild);
-  const serviceWithOverrides = new AutomodService(
-    AutomodRepository.createServiceDeps(repo),
-    { ...service.config, ...overrides } as any,
+  const deps = AutomodRepository.createServiceDeps(repo);
+  deps.aiClassify = aiClassify;
+  deps.mediaClassify = mediaClassify;
+  const svc = new AutomodService(
+    deps,
+    { ...serviceWithDeps.config, ...overrides } as any,
   );
 
   const isStaff = await isStaffMember(message.guild, message.author.id);
   const memberRoles = message.member ? (message.member.roles.cache.map((r) => r.id) as string[]) : [];
+  const channel = message.channel;
+  const channelIsNsfw = channel.isTextBased() ? (channel as any).isNSFW() : false;
 
   const input = {
     guildId: message.guild.id,
@@ -69,10 +89,12 @@ client.on(Events.MessageCreate, async (message: Message) => {
     mentionHere: false, // discord.js v14 doesn't expose @here directly; content scan fallback
     messageId: message.id,
     timestamp: message.createdAt,
+    channelIsNsfw,
+    replyChainPriorHits: false,
   };
 
-  const response = await serviceWithOverrides.handleMessage(input);
-  if (response.action === "none") return;
+  const response = await svc.handleMessage(input);
+  if (response.action === "none" && !response.shouldPostToReviewQueue) return;
 
   // Execute the action
   try {
@@ -82,8 +104,13 @@ client.on(Events.MessageCreate, async (message: Message) => {
       });
     }
 
-    // Public notice (auto-deletes after 8 seconds)
-    if (response.shouldLog && service.config.publicNotice && message.channel.isTextBased()) {
+    // Public notice (auto-deletes after 8 seconds) — skip for AI review (never auto-punish from AI)
+    if (
+      response.shouldLog &&
+      service.config.publicNotice &&
+      message.channel.isTextBased() &&
+      response.action !== "alert"
+    ) {
       const notice = await (message.channel as any).send(
         `🛡️ <@${input.userId}>, your message was removed: ${response.reason}.`,
       );
@@ -91,7 +118,7 @@ client.on(Events.MessageCreate, async (message: Message) => {
     }
 
     // Log the hit
-    await service.deps.recordAutomodHit({
+    await svc.deps.recordAutomodHit({
       guildId: input.guildId,
       userId: input.userId,
       channelId: input.channelId,
@@ -100,23 +127,40 @@ client.on(Events.MessageCreate, async (message: Message) => {
       shadow: response.shadow,
     });
 
-    // DM the user with explanation (best effort)
-    try {
-      await message.author.send(
-        `Your message in **${message.guild.name}** was removed by AutoMod: ${response.reason}.\n` +
-          "If you think this is a mistake, contact the moderators.",
-      ).catch(() => {
-        // DMs may be closed
-      });
-    } catch {
-      // DM failed; continue
+    // DM the user with explanation (best effort) — skip for AI review (mods handle it via review queue)
+    if (response.shouldDm) {
+      try {
+        await message.author.send(
+          `Your message in **${message.guild.name}** was removed by AutoMod: ${response.reason}.\n` +
+            "If you think this is a mistake, contact the moderators.",
+        ).catch(() => {
+          // DMs may be closed
+        });
+      } catch {
+        // DM failed; continue
+      }
     }
 
-    // Repeat escalation
-    const { escalated } = await serviceWithOverrides.applyEscalation(input, response.action);
-    if (escalated) {
-      // Could escalate to timeout/kick/ban here via Discord API
-      // For now, record the escalation in the hit details
+    // Post to Mod Review Queue (AM-12/AM-13)
+    if (response.shouldPostToReviewQueue) {
+      await postToReviewQueue({
+        guildId: input.guildId,
+        channelId: input.channelId,
+        type: response.reviewType ?? "automod_ai",
+        targetUserId: input.userId,
+        targetUserTag: message.author.tag,
+        evidence: response.reviewEvidence ?? response.details ?? {},
+        aiExplanation: response.reviewAiExplanation ?? null,
+      });
+    }
+
+    // Repeat escalation (skip when no action was taken)
+    if (response.action !== "none") {
+      const { escalated } = await svc.applyEscalation(input, response.action);
+      if (escalated) {
+        // Could escalate to timeout/kick/ban here via Discord API
+        // For now, record the escalation in the hit details
+      }
     }
   } catch {
     // Action execution failed; do not crash the message handler

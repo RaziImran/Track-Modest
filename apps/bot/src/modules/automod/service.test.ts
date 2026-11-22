@@ -13,6 +13,8 @@ const baseDeps = (): AutomodServiceDeps => ({
   incrementRepeatHits: (vi.fn() as any).mockResolvedValue(1),
   getRepeatHits: (vi.fn() as any).mockResolvedValue(0),
   isPhishDomain: (vi.fn() as any).mockResolvedValue(false),
+  aiClassify: (vi.fn() as any).mockResolvedValue(null),
+  mediaClassify: (vi.fn() as any).mockResolvedValue([]),
 });
 
 const defaultConfig = {
@@ -33,6 +35,8 @@ const defaultConfig = {
   phishingEnabled: true,
   publicNotice: true,
   useNative: false,
+  aiEnabled: false,
+  mediaScanEnabled: false,
 };
 
 function baseInput(overrides: Partial<Parameters<AutomodService["handleMessage"]>[0]> = {}) {
@@ -55,6 +59,8 @@ function baseInput(overrides: Partial<Parameters<AutomodService["handleMessage"]
     mentionHere: false,
     messageId: "m1",
     timestamp: new Date(),
+    channelIsNsfw: false,
+    replyChainPriorHits: false,
     ...overrides,
   };
 }
@@ -526,6 +532,198 @@ describe("AutomodService", () => {
       const result = await service.applyEscalation(baseInput(), "delete");
       expect(result.escalated).toBe(false);
       expect(result.action).toBe("delete");
+    });
+  });
+
+  describe("checkAIContextReview (AM-12)", () => {
+    it("skips when aiEnabled is false", async () => {
+      const deps = baseDeps();
+      const service = new AutomodService(deps, defaultConfig);
+      const result = await service.handleMessage(
+        baseInput({ content: "you are stupid" }),
+      );
+      expect(result.action).toBe("none");
+      expect(result.shouldPostToReviewQueue).toBe(false);
+    });
+
+    it("skips when no risk signals", async () => {
+      const deps = baseDeps();
+      const config = { ...defaultConfig, aiEnabled: true };
+      const service = new AutomodService(deps, config);
+      const result = await service.handleMessage(
+        baseInput({ content: "hello world" }),
+      );
+      expect(result.action).toBe("none");
+      expect(result.shouldPostToReviewQueue).toBe(false);
+    });
+
+    it("skips silently when AI budget exhausted (aiClassify returns null)", async () => {
+      const deps = baseDeps();
+      (deps.aiClassify as any).mockResolvedValue(null);
+      const config = { ...defaultConfig, aiEnabled: true };
+      const service = new AutomodService(deps, config);
+      const result = await service.handleMessage(
+        baseInput({ content: "you are stupid" }),
+      );
+      expect(result.action).toBe("none");
+      expect(deps.aiClassify).toHaveBeenCalledWith({
+        content: "you are stupid",
+        riskSignals: ["second_person_insult"],
+      });
+    });
+
+    it("posts to review queue for severity >= 2, never auto-punishes", async () => {
+      const deps = baseDeps();
+      (deps.aiClassify as any).mockResolvedValue({
+        category: "harassment",
+        severity: 3,
+        explanation: "Targeted insults",
+      });
+      const config = { ...defaultConfig, aiEnabled: true };
+      const service = new AutomodService(deps, config);
+      const result = await service.handleMessage(
+        baseInput({ content: "you are stupid" }),
+      );
+      expect(result.action).toBe("alert");
+      expect(result.shouldDelete).toBe(false);
+      expect(result.shouldDm).toBe(false);
+      expect(result.shouldPostToReviewQueue).toBe(true);
+      expect(result.reviewType).toBe("automod_ai");
+      expect(result.reviewAiExplanation).toBe("Targeted insults");
+    });
+
+    it("handles self_harm by posting to review queue without punishment", async () => {
+      const deps = baseDeps();
+      (deps.aiClassify as any).mockResolvedValue({
+        category: "self_harm",
+        severity: 3,
+        explanation: "Self-harm indicators detected",
+      });
+      const config = { ...defaultConfig, aiEnabled: true };
+      const service = new AutomodService(deps, config);
+      const result = await service.handleMessage(
+        baseInput({ content: "i want to kill myself" }),
+      );
+      expect(result.action).toBe("alert");
+      expect(result.shouldDelete).toBe(false);
+      expect(result.shouldPostToReviewQueue).toBe(true);
+      expect(result.reviewType).toBe("automod_ai");
+      expect(result.reviewAiExplanation).toBe("Self-harm indicators detected");
+    });
+
+    it("skips when severity < 2", async () => {
+      const deps = baseDeps();
+      (deps.aiClassify as any).mockResolvedValue({
+        category: "spam",
+        severity: 1,
+        explanation: "Likely spam",
+      });
+      const config = { ...defaultConfig, aiEnabled: true };
+      const service = new AutomodService(deps, config);
+      const result = await service.handleMessage(
+        baseInput({ content: "buy now" }),
+      );
+      expect(result.action).toBe("none");
+      expect(result.shouldPostToReviewQueue).toBe(false);
+    });
+  });
+
+  describe("checkMediaScan (AM-13)", () => {
+    it("skips when mediaScanEnabled is false", async () => {
+      const deps = baseDeps();
+      const service = new AutomodService(deps, defaultConfig);
+      const result = await service.handleMessage(
+        baseInput({
+          attachmentCount: 1,
+          attachments: [{ filename: "image.png", size: 1000, contentType: "image/png" }],
+        }),
+      );
+      expect(result.action).toBe("none");
+      expect(result.shouldPostToReviewQueue).toBe(false);
+    });
+
+    it("skips when no image attachments", async () => {
+      const deps = baseDeps();
+      const config = { ...defaultConfig, mediaScanEnabled: true };
+      const service = new AutomodService(deps, config);
+      const result = await service.handleMessage(
+        baseInput({
+          attachmentCount: 1,
+          attachments: [{ filename: "doc.pdf", size: 1000, contentType: "application/pdf" }],
+        }),
+      );
+      expect(result.action).toBe("none");
+      expect(result.shouldPostToReviewQueue).toBe(false);
+    });
+
+    it("skips when channel is NSFW", async () => {
+      const deps = baseDeps();
+      const config = { ...defaultConfig, mediaScanEnabled: true };
+      const service = new AutomodService(deps, config);
+      const result = await service.handleMessage(
+        baseInput({
+          channelIsNsfw: true,
+          attachmentCount: 1,
+          attachments: [{ filename: "image.png", size: 1000, contentType: "image/png" }],
+        }),
+      );
+      expect(result.action).toBe("none");
+      expect(deps.mediaClassify).not.toHaveBeenCalled();
+    });
+
+    it("posts to review queue for detected media (non-scam_qr)", async () => {
+      const deps = baseDeps();
+      (deps.mediaClassify as any).mockResolvedValue([
+        { category: "nsfw", confidence: 0.9 },
+      ]);
+      const config = { ...defaultConfig, mediaScanEnabled: true };
+      const service = new AutomodService(deps, config);
+      const result = await service.handleMessage(
+        baseInput({
+          attachmentCount: 1,
+          attachments: [{ filename: "image.png", size: 1000, contentType: "image/png" }],
+        }),
+      );
+      expect(result.action).toBe("alert");
+      expect(result.shouldDelete).toBe(false);
+      expect(result.shouldPostToReviewQueue).toBe(true);
+      expect(result.reviewType).toBe("automod_media");
+    });
+
+    it("auto-deletes scam_qr with high confidence and posts to review queue", async () => {
+      const deps = baseDeps();
+      (deps.mediaClassify as any).mockResolvedValue([
+        { category: "scam_qr", confidence: 0.95 },
+      ]);
+      const config = { ...defaultConfig, mediaScanEnabled: true };
+      const service = new AutomodService(deps, config);
+      const result = await service.handleMessage(
+        baseInput({
+          attachmentCount: 1,
+          attachments: [{ filename: "qr.png", size: 1000, contentType: "image/png" }],
+        }),
+      );
+      expect(result.action).toBe("delete");
+      expect(result.shouldDelete).toBe(true);
+      expect(result.shouldPostToReviewQueue).toBe(true);
+      expect(result.reviewType).toBe("automod_media");
+    });
+
+    it("skips when media scan returns no hits", async () => {
+      const deps = baseDeps();
+      (deps.mediaClassify as any).mockResolvedValue([
+        { category: "none", confidence: 0.1 },
+      ]);
+      const config = { ...defaultConfig, mediaScanEnabled: true };
+      const service = new AutomodService(deps, config);
+      const result = await service.handleMessage(
+        baseInput({
+          attachmentCount: 1,
+          attachments: [{ filename: "image.png", size: 1000, contentType: "image/png" }],
+        }),
+      );
+      expect(result.action).toBe("none");
+      expect(result.shouldPostToReviewQueue).toBe(false);
     });
   });
 });
