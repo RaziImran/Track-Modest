@@ -52,21 +52,21 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [ ] MOD-20 Rule simulator (14.7) — BLOCKED: requires AutoMod module pipeline (see DECISIONS.md)
 
 ### AutoMod (AM)
-- [ ] AM-01 Exemptions (11.2)
-- [ ] AM-02 Phishing/scam link detection + hourly list refresh + report-domain (11.2, 11.9)
-- [ ] AM-03 Invite filtering (own-server invites allowed) (11.2)
-- [ ] AM-04 Link policy allow/allowlist/block (11.2)
-- [ ] AM-05 Mention spam (11.2)
-- [ ] AM-06 Message rate spam (11.2)
-- [ ] AM-07 Duplicate & cross-channel spam (11.2)
-- [ ] AM-08 Bad-word filter with normalization, leetspeak, Scunthorpe allowlist, per-language lists (11.3)
-- [ ] AM-09 Caps/emoji/newlines/zalgo (11.2)
-- [ ] AM-10 Custom rules with re2 regex & shadow flag (11.5)
-- [ ] AM-11 Actions, public notice, DM explanation, log with Undo/False positive, repeat escalation (11.4)
-- [ ] AM-12 AI context review â†’ review queue (11.6)
-- [ ] AM-13 Media scan â†’ review queue (11.7)
-- [ ] AM-14 Native Discord AutoMod sync (11.8)
-- [ ] AM-15 Dangerous file warnings (23.4)
+- [x] AM-01 Exemptions (11.2) — b1c225d
+- [x] AM-02 Phishing/scam link detection + hourly list refresh + report-domain (11.2, 11.9) — b1c225d
+- [x] AM-03 Invite filtering (own-server invites allowed) (11.2) — b1c225d
+- [x] AM-04 Link policy allow/allowlist/block (11.2) — b1c225d
+- [x] AM-05 Mention spam (11.2) — b1c225d
+- [x] AM-06 Message rate spam (11.2) — b1c225d
+- [x] AM-07 Duplicate & cross-channel spam (11.2) — b1c225d
+- [x] AM-08 Bad-word filter with normalization, leetspeak, Scunthorpe allowlist, per-language lists (11.3) — b1c225d
+- [x] AM-09 Caps/emoji/newlines/zalgo (11.2) — b1c225d
+- [x] AM-10 Custom rules with re2 regex & shadow flag (11.5) — b1c225d
+- [x] AM-11 Actions, public notice, DM explanation, log with Undo/False positive, repeat escalation (11.4) — b1c225d
+- [ ] AM-12 AI context review ? review queue (11.6)
+- [ ] AM-13 Media scan ? review queue (11.7)
+- [x] AM-14 Native Discord AutoMod sync (11.8) — b1c225d
+- [x] AM-15 Dangerous file warnings (23.4) — b1c225d
 
 ### Protection (SEC)
 - [x] SEC-01 Join-spike detection with baseline (12.1) — 198d850
