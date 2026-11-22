@@ -393,6 +393,15 @@
       "setup:messageFailed": "Failed to post the verification message.",
       "error:notInServer": "This must be used in a server.",
       "error:unknownSubcommand": "Unknown verification subcommand."
+    },
+    "antinuke": {
+      "title": "Anti-Nuke Alert",
+      "thresholdBreached": "🚨 Anti-nuke alert: {executor} performed {count} {action} actions in 60 seconds (threshold: {threshold}). Dangerous roles removed.",
+      "ownerAlert": "🚨 Anti-nuke alert in **{guild}**: {executor} performed {count} {action} actions in 60 seconds (threshold: {threshold}). Dangerous roles removed.",
+      "botKicked": "Bot {bot} kicked for exceeding anti-nuke threshold.",
+      "error": {
+        "notInServer": "This must be used in a server."
+      }
     }
   }
 }

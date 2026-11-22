@@ -27,7 +27,7 @@ export type SettingChange = z.infer<typeof SettingChangeSchema>;
 // Category → setting key mapping (§9.5)
 export const CATEGORY_SETTINGS: Record<SettingsCategory, string[]> = {
   General: ["sizeTier", "strictness"],
-  Protection: ["antinuke.threshold", "verify.mode", "verify.minAccountAgeDays", "verify.kickAfterMinutes", "raid.windowSec", "raid.minJoins", "raid.joinMultiplier", "raid.action", "raid.pingMods"],
+  Protection: ["antinuke.threshold", "antinuke.trustedUsers", "verify.mode", "verify.minAccountAgeDays", "verify.kickAfterMinutes", "raid.windowSec", "raid.minJoins", "raid.joinMultiplier", "raid.action", "raid.pingMods"],
   AutoMod: [
     "automod.spam.maxMessages",
     "automod.spam.windowSec",
@@ -79,6 +79,7 @@ export const SETTING_LABELS: Record<string, string> = {
   sizeTier: "Server size tier",
   strictness: "Strictness level",
   "antinuke.threshold": "Anti-nuke threshold",
+  "antinuke.trustedUsers": "Anti-nuke trusted users",
   "verify.mode": "Verification mode",
   "verify.minAccountAgeDays": "Min account age (days)",
   "verify.kickAfterMinutes": "Kick unverified after (minutes)",
