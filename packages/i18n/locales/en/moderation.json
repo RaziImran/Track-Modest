@@ -402,6 +402,14 @@
       "error": {
         "notInServer": "This must be used in a server."
       }
+    },
+    "compromised": {
+      "title": "Compromised Account Detected",
+      "dmWarning": "Your account may be compromised — change your password and enable 2FA.",
+      "timeout": "Account timed out for {minutes} minutes due to suspected compromise.",
+      "error": {
+        "notInServer": "This must be used in a server."
+      }
     }
   }
 }
