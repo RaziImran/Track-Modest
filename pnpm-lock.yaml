@@ -208,6 +208,9 @@ importers:
       '@discordjs/rest':
         specifier: 2.4.0
         version: 2.4.0
+      '@modest/config-engine':
+        specifier: workspace:*
+        version: link:../../packages/config-engine
       '@modest/db':
         specifier: workspace:*
         version: link:../../packages/db

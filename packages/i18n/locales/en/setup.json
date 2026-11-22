@@ -16,7 +16,8 @@
       "description": "Choose your server's language. This affects bot responses and logs.",
       "field": {
         "current": "Current locale",
-        "default": "English (default)"
+        "default": "English (default)",
+        "placeholder": "Choose a language"
       }
     },
     "step2": {

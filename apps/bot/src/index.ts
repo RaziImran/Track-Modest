@@ -18,6 +18,7 @@ import "./modules/raidprediction/index.js";
 import "./modules/shadowmode/index.js";
 import "./modules/bannetwork/index.js";
 import "./modules/automod/index.js";
+import "./modules/setup/index.js";
 import "./events/messageUpdate.js";
 import "./events/messageDelete.js";
 import "./events/messageDeleteBulk.js";
@@ -33,6 +34,7 @@ import "./events/inviteCreate.js";
 import "./events/inviteDelete.js";
 import "./events/guildUpdate.js";
 import "./events/guildEmojiUpdate.js";
+import "./events/guildCreate.js";
 
 registerCommand(pingCommand, import.meta.url);
 

@@ -1,7 +1,11 @@
 import { registerCommand } from "../../core/commandRegistry.js";
 import { setupCommand } from "./commands/setup.js";
 import { client } from "../../client.js";
-import { Events, EmbedBuilder } from "discord.js";
+import {
+  Events,
+  EmbedBuilder,
+  StringSelectMenuBuilder,
+} from "discord.js";
 import {
   getSetupState,
   setSetupState,
@@ -10,7 +14,12 @@ import {
   applySetupConfig,
 } from "./repository.js";
 import { SetupService } from "./service.js";
-import { type SetupState } from "./schemas.js";
+import {
+  type SetupState,
+  type SupportedLocale,
+  SUPPORTED_LOCALES,
+  LOCALE_LABELS,
+} from "./schemas.js";
 import { COLORS } from "../../core/reply.js";
 
 const SETUP_STATE_TTL_SEC = 60 * 30; // 30 minutes
@@ -33,23 +42,40 @@ async function loadOrCreateState(
 // ── Step renderers ──
 
 function renderStep1(
-  _state: SetupState,
+  state: SetupState,
   guild: any,
   t: (key: string, params?: Record<string, unknown>) => string,
 ): { embeds: any[]; components: any[] } {
-  void _state;
+  const current = state.locale ?? guild.preferredLocale ?? "en";
   const embed = new EmbedBuilder()
     .setTitle(t("setup:step1.title"))
     .setDescription(t("setup:step1.description"))
     .setColor(COLORS.info)
     .addFields({
       name: t("setup:step1.field.current"),
-      value: guild.preferredLocale ?? t("setup:step1.field.default"),
+      value: current,
     });
+
+  const localeSelect = new StringSelectMenuBuilder()
+    .setCustomId("setup:select:locale")
+    .setPlaceholder(t("setup:step1.field.placeholder"))
+    .setMinValues(1)
+    .setMaxValues(1);
+
+  for (const loc of SUPPORTED_LOCALES) {
+    localeSelect.addOptions([
+      {
+        label: LOCALE_LABELS[loc] ?? loc,
+        value: loc,
+        default: loc === current,
+      },
+    ]);
+  }
 
   return {
     embeds: [embed],
     components: [
+      { type: 1, components: [localeSelect] },
       {
         type: 1,
         components: [
@@ -700,6 +726,13 @@ client.on(Events.InteractionCreate, async (interaction) => {
           });
           await setSetupState(guild.id, userId, state, SETUP_STATE_TTL_SEC);
           await renderStep(interaction, state, guild, t);
+        } else if (target === "locale") {
+          const value = (interaction as any).values?.[0];
+          if (value && SUPPORTED_LOCALES.includes(value as SupportedLocale)) {
+            state = await service.updateState(guild.id, userId, { locale: value as SupportedLocale });
+            await setSetupState(guild.id, userId, state, SETUP_STATE_TTL_SEC);
+            await renderStep(interaction, state, guild, t);
+          }
         }
         break;
       }
@@ -744,7 +777,12 @@ client.on(Events.InteractionCreate, async (interaction) => {
             (new EmbedBuilder()
               .setTitle(t("setup:complete.title"))
               .setDescription(t("setup:complete.description"))
-              .setColor(COLORS.success) as any),
+              .setColor(COLORS.success)
+              .addFields({
+                name: "Next step",
+                value: "Run `/checkperms` (Permission Doctor) to verify the bot has the permissions it needs for your enabled modules.",
+                inline: false,
+              }) as any),
           ],
           components: [],
         });

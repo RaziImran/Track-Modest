@@ -161,6 +161,19 @@ export const SUPPORTED_LOCALES = [
 
 export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
 
+export const LOCALE_LABELS: Record<SupportedLocale, string> = {
+  en: "English",
+  es: "Español",
+  "pt-BR": "Português (Brasil)",
+  fr: "Français",
+  de: "Deutsch",
+  hi: "हिन्दी",
+  ur: "اردو",
+  ar: "العربية",
+  tr: "Türkçe",
+  id: "Bahasa Indonesia",
+};
+
 // Module categories for step 7 (§9.3)
 export interface ModuleCategory {
   key: string;
