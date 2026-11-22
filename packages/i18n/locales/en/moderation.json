@@ -59,6 +59,24 @@
         "actionFailed": "Removing the timeout failed. Please check my permissions and role hierarchy, then try again."
       },
       "success": "Case #{caseNumber} — the timeout on {user} was removed."
+    },
+    "kick": {
+      "dm": {
+        "title": "You were kicked",
+        "body": "**Server:** {guild}\n**Reason:** {reason}\n**Moderator:** {moderator}"
+      },
+      "modlog": {
+        "title": "Member kicked",
+        "body": "Case #{case} — {target} was kicked by {moderator}\n**Reason:** {reason}"
+      },
+      "error": {
+        "hierarchy": "{message}",
+        "notInServer": "That user is not in this server.",
+        "cannotTargetBot": "I cannot kick myself.",
+        "missingPermissions": "I'm missing permissions to do that. Please move my role above theirs in Server Settings → Roles and grant me the Kick Members permission.",
+        "actionFailed": "The kick failed. Please check my permissions and role hierarchy, then try again."
+      },
+      "success": "Case #{caseNumber} — {user} was kicked."
     }
   }
 }

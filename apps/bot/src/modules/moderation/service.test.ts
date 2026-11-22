@@ -76,6 +76,32 @@ describe("ModerationService.applyTimeout", () => {
   });
 });
 
+describe("ModerationService.applyKick", () => {
+  it("increments the counter, creates a KICK case and applies a -50 rep penalty", async () => {
+    const deps = baseDeps();
+    deps.incrementCaseCounter.mockResolvedValue(8);
+    deps.createCase.mockResolvedValue({ id: 81, number: 8 });
+    deps.applyRepPenalty.mockResolvedValue(-50);
+
+    const service = new ModerationService(deps);
+    const result = await service.applyKick("g1", "u1", "m1", "harassment");
+
+    expect(deps.incrementCaseCounter).toHaveBeenCalledWith("g1");
+    expect(deps.createCase).toHaveBeenCalledWith({
+      guildId: "g1",
+      type: "KICK",
+      targetId: "u1",
+      moderatorId: "m1",
+      reason: "harassment",
+      points: 0,
+      caseNumber: 8,
+      automatic: false,
+    });
+    expect(deps.applyRepPenalty).toHaveBeenCalledWith("g1", "u1", -50);
+    expect(result).toEqual({ caseNumber: 8, caseId: 81 });
+  });
+});
+
 describe("ModerationService.applyUnTimeout", () => {
   it("increments the counter and creates an UNTIMEOUT case with no rep penalty", async () => {
     const deps = baseDeps();

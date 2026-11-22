@@ -96,6 +96,27 @@ export class ModerationService {
     return { caseNumber, caseId: created.id };
   }
 
+  async applyKick(
+    guildId: string,
+    targetId: string,
+    moderatorId: string,
+    reason: string,
+  ): Promise<{ caseNumber: number; caseId: number }> {
+    const caseNumber = await this.deps.incrementCaseCounter(guildId);
+    const created = await this.deps.createCase({
+      guildId,
+      type: "KICK",
+      targetId,
+      moderatorId,
+      reason,
+      points: 0,
+      caseNumber,
+      automatic: false,
+    });
+    await this.deps.applyRepPenalty(guildId, targetId, -50);
+    return { caseNumber, caseId: created.id };
+  }
+
   async applyUnTimeout(
     guildId: string,
     targetId: string,

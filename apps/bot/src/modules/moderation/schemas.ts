@@ -56,6 +56,21 @@ export function validateUnTimeoutInput(raw: unknown): UnTimeoutCommandInput | { 
   return parsed.data;
 }
 
+export const KickCommandInputSchema = z.object({
+  user: z.string().min(1, "User is required"),
+  reason: z.string().min(1, "Reason is required").max(1000, "Reason too long"),
+});
+
+export type KickCommandInput = z.infer<typeof KickCommandInputSchema>;
+
+export function validateKickInput(raw: unknown): KickCommandInput | { error: string } {
+  const parsed = KickCommandInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  return parsed.data;
+}
+
 export const CaseViewInputSchema = z.object({
   number: z.coerce.number().int().min(1, "Invalid case number"),
 });
