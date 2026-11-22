@@ -1,8 +1,8 @@
 import { loadEnv, createLogger } from "@modest/shared";
 import { prisma } from "@modest/db";
 import { REST, Routes } from "discord.js";
-import { createModerationQueue } from "./queue.js";
-import { createCaseExpireWorker } from "./worker.js";
+import { createModerationQueue, createBoostEndQueue } from "./queue.js";
+import { createCaseExpireWorker, createBoostEndWorker } from "./worker.js";
 import { buildRecoveryDeps, runRecoverySweep } from "./recovery.js";
 
 const logger = createLogger("worker");
@@ -37,6 +37,14 @@ async function main(): Promise<void> {
   const queue = createModerationQueue(redisUrl);
   const worker = createCaseExpireWorker(redisUrl, deps);
 
+  // §8.10 — Worker for boost:end delayed jobs.
+  const boostEndQueue = createBoostEndQueue(redisUrl);
+  const boostEndWorker = createBoostEndWorker(redisUrl, {
+    prisma,
+    rest,
+    logger,
+  });
+
   logger.info({ service: "worker", event: "starting" }, "Worker starting");
 
   // §10.7 Recovery sweep on start: expire cases whose jobs were lost.
@@ -55,10 +63,21 @@ async function main(): Promise<void> {
     );
   });
 
+  boostEndWorker.on("failed", (job, err) => {
+    const error = err instanceof Error ? err : new Error(String(err));
+    logger.error(
+      { service: "worker", event: "boost-end-job-failed" },
+      `Boost end job failed${job?.id ? ` (job ${job.id})` : ""}`,
+      error,
+    );
+  });
+
   const shutdown = async (): Promise<void> => {
     logger.info({ service: "worker", event: "shutdown" }, "Shutting down");
     await worker.close();
+    await boostEndWorker.close();
     await queue.close();
+    await boostEndQueue.close();
     await prisma.$disconnect();
     process.exit(0);
   };

@@ -5,6 +5,7 @@ import { buildHealthReport } from "./core/health.js";
 import { metricsText } from "./core/metrics.js";
 import { runGracefulShutdown } from "./core/gracefulShutdown.js";
 import "./modules/moderation/index.js";
+import "./modules/config/index.js";
 import "./modules/logging/index.js";
 import "./modules/hub/index.js";
 import "./events/messageUpdate.js";

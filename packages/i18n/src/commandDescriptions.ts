@@ -30,6 +30,7 @@ export const commandDescriptions: CommandDescriptionMap = {
   softban: { en: "Softban a user (ban with 1 day message deletion, then unban)." },
   unban: { en: "Unban a user from the server." },
   menu: { en: "Open your Track Modest hub — profile, quests, games, and more." },
+  strictness: { en: "Manage temporary strictness boosts (admin only)." },
 };
 
 /**

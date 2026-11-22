@@ -26,6 +26,31 @@
         "reason": "Reason: {reason}",
         "applyButton": "Apply",
         "dismissButton": "Dismiss"
+      },
+      "boost": {
+        "title": "Temporary Strictness Boost",
+        "confirm": {
+          "boost": "Boost strictness to **{level}** for **{duration}**? This affects the whole server.",
+          "boostEnd": "End the active temporary boost early and return to the configured strictness?"
+        },
+        "success": {
+          "boost": "Strictness boosted to **{level}** for **{duration}**. Returns {endsAt}.",
+          "boostEnd": "Temporary boost ended. Strictness returned to the configured level."
+        },
+        "modlog": {
+          "title": "Temporary strictness boost applied",
+          "body": "Case — Strictness boosted to **{level}** for **{duration}** by {moderator}\n**Reason:** {reason}",
+          "boostEnded": "Temporary strictness boost ended early by {moderator}."
+        },
+        "error": {
+          "notInServer": "This command can only be used in a server.",
+          "invalidDuration": "Invalid duration. Use a value like 15m, 2h, 1d (15 minutes to 24 hours).",
+          "missingPermissions": "My highest role must be above yours to apply a server-wide boost.",
+          "noActiveBoost": "There is no active temporary boost to end.",
+          "endFailed": "Failed to end the temporary boost.",
+          "unknownSubcommand": "Unknown subcommand."
+        },
+        "cancelled": "Action cancelled."
       }
     },
     "size": {

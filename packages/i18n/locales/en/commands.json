@@ -9,6 +9,9 @@
       "softban": { "description": "Softban a user (ban with 1 day message deletion, then unban)." },
       "unban": { "description": "Unban a user from the server." }
     },
+    "config": {
+      "strictness": { "description": "Manage temporary strictness boosts (admin only)." }
+    },
     "hub": {
       "menu": { "description": "Open your Track Modest hub — profile, quests, games, and more." }
     }

@@ -1,5 +1,6 @@
 export type ModuleName =
   | "setup"
+  | "config"
   | "moderation"
   | "automod"
   | "antiraid"
