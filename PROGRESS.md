@@ -74,7 +74,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] SEC-03 Verification: button, captcha, quiz, account-age, kick-after (12.2) — 322df00
 - [x] SEC-04 Anti-nuke via audit log with trusted users & bot-add protection (12.3) — c30453a
 - [x] SEC-05 Compromised account detection (20.6) — 66124ed
-- [ ] SEC-06 Risk score (15.1)
+- [x] SEC-06 Risk score (15.1) — 6803fc0
 - [ ] SEC-07 Mod Review Queue with claim (15.2)
 - [ ] SEC-08 Raid prediction (15.3)
 - [ ] SEC-09 Shadow mode for rules & profiles (15.4)
