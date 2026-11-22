@@ -264,6 +264,22 @@
         "cannotTargetSelf": "You cannot view your own history.",
         "hierarchy": "{message}"
       }
+    },
+    "modstats": {
+      "title": "Moderation Stats — {period}",
+      "summary": "Actions by {target}",
+      "actionsByType": "Actions by type",
+      "noCases": "• No cases in this period",
+      "undoRate": "Undo rate",
+      "undoRateValue": "{rate}% ({undone} of {total})",
+      "reportsByStatus": "Reports by status",
+      "noReports": "• No reports in this period",
+      "medianResponseTime": "Median response time",
+      "medianMinutes": "{minutes} min",
+      "noResolvedReports": "No resolved reports",
+      "error": {
+        "notInServer": "This command must be used in a server."
+      }
     }
   }
 }
