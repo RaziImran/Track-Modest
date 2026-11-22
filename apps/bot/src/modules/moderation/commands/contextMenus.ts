@@ -11,6 +11,7 @@ import {
 import type { BotCommand, CommandContext } from "@modest/shared";
 import { checkHierarchy } from "@modest/shared";
 import { COLORS } from "../../../core/reply.js";
+import { getActiveWarnPoints } from "../repository.js";
 
 function getCfg(cfg: any, key: string, fallback: unknown): unknown {
   if (!cfg) return fallback;
@@ -148,6 +149,7 @@ export async function sendPanel(
   const actor = interaction.user;
   const targetId = targetUser.id;
   const moderatorId = actor.id;
+  const cfg = ctx.config as any;
 
   // Permission checks
   const botMember = guild?.members.cache.get(interaction.client?.user?.id);
@@ -173,6 +175,19 @@ export async function sendPanel(
   const canBan = canWarn && !targetIsOwner && !targetHighestRoleGeActor;
 
   const embed = buildSummaryEmbed(targetUser, member, t);
+
+  // Active warning points (§10.5)
+  const expiryDays =
+    typeof getCfg(cfg, "warn.pointExpiryDays", 30) === "number"
+      ? (getCfg(cfg, "warn.pointExpiryDays", 30) as number)
+      : 30;
+  const activePoints = await getActiveWarnPoints(guild.id, targetId, expiryDays);
+  embed.addFields({
+    name: t("moderation:context:panel.activePoints", { points: activePoints }),
+    value: t("moderation:context:panel.activePointsDesc", { expiryDays }),
+    inline: true,
+  });
+
   const rows = buildPanelButtons(
     isMessageMenu,
     canWarn,
@@ -308,6 +323,7 @@ export async function handleModalSubmit(
       getLadderCasesInWindow: async () => [],
       findCase: async () => null,
       undoCase: async () => {},
+      getUserCases: async () => [],
     });
 
     try {
@@ -396,6 +412,7 @@ export async function handleModalSubmit(
     getLadderCasesInWindow: async () => [],
     findCase: async () => null,
     undoCase: async () => {},
+    getUserCases: async () => [],
   });
 
   const guildId = guild.id;

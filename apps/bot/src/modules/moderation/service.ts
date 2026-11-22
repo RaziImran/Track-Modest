@@ -52,6 +52,21 @@ export interface ModerationServiceDeps {
     createdAt: Date;
   } | null>;
   undoCase: (guildId: string, caseNumber: number, undoneBy: string) => Promise<void>;
+  getUserCases: (guildId: string, targetId: string) => Promise<{
+    id: number;
+    number: number;
+    type: string;
+    targetId: string;
+    moderatorId: string;
+    reason: string;
+    durationSec: number | null;
+    points: number;
+    undone: boolean;
+    undoneBy: string | null;
+    undoneAt: Date | null;
+    logMessageId: string | null;
+    createdAt: Date;
+  }[]>;
 }
 
 export interface MassBanResult {

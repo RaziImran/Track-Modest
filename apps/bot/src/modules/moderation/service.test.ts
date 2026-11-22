@@ -9,6 +9,7 @@ const baseDeps = () => ({
   getLadderCasesInWindow: vi.fn(),
   findCase: vi.fn(),
   undoCase: vi.fn(),
+  getUserCases: vi.fn(),
 });
 
 describe("ModerationService.applyWarn", () => {

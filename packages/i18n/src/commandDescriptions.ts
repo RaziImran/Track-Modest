@@ -36,6 +36,7 @@ export const commandDescriptions: CommandDescriptionMap = {
   menu: { en: "Open your Track Modest hub — profile, quests, games, and more." },
   strictness: { en: "Manage temporary strictness boosts (admin only)." },
   settings: { en: "Configure server settings via an interactive panel." },
+  history: { en: "Show a member's moderation case history and active warning points." },
 };
 
 /**

@@ -10,6 +10,7 @@ import { purgeCommand } from "./commands/purge.js";
 import { channelCommand } from "./commands/channel.js";
 import { lockdownCommand } from "./commands/lockdown.js";
 import { nickCommand } from "./commands/nick.js";
+import { historyCommand } from "./commands/history.js";
 import {
   moderateUserCommand,
   moderateMessageCommand,
@@ -24,6 +25,7 @@ import { ModerationService } from "./service.js";
 import {
   findCase,
   undoCase,
+  getUserCases,
   incrementCaseCounter,
   createCase,
   applyRepPenalty,
@@ -43,6 +45,7 @@ registerCommand(purgeCommand, import.meta.url);
 registerCommand(channelCommand, import.meta.url);
 registerCommand(lockdownCommand, import.meta.url);
 registerCommand(nickCommand, import.meta.url);
+registerCommand(historyCommand, import.meta.url);
 registerCommand(moderateUserCommand, import.meta.url);
 registerCommand(moderateMessageCommand, import.meta.url);
 registerCommand(reportMessageCommand, import.meta.url);
@@ -74,6 +77,79 @@ client.on(Events.InteractionCreate, async (interaction) => {
     } catch {
       await interaction.reply({ content: "Failed to delete message.", ephemeral: true });
     }
+    return;
+  }
+
+  // History button: show case history panel instead of a reason modal
+  if (action === "history" && interaction.isButton()) {
+    const guild = interaction.guild;
+    if (!guild) {
+      await interaction.reply({ content: "This must be used in a server.", ephemeral: true });
+      return;
+    }
+    await interaction.deferReply({ ephemeral: true });
+
+    const config = await prisma.guildConfig.findUnique({
+      where: { guildId: guild.id },
+      select: { modLogChannelId: true, logChannels: true },
+    });
+    const expiryDays =
+      typeof (config as any)?.warn?.pointExpiryDays === "number"
+        ? (config as any).warn.pointExpiryDays
+        : typeof (config as any)?.pointExpiryDays === "number"
+          ? (config as any).pointExpiryDays
+          : 30;
+
+    const service = new ModerationService({
+      incrementCaseCounter: async () => 0,
+      createCase: async () => ({ id: 0, number: 0 }),
+      applyRepPenalty: async () => 0,
+      getActiveWarnPoints: async () => 0,
+      getLadderCasesInWindow: async () => [],
+      findCase: async () => null,
+      undoCase: async () => {},
+      getUserCases,
+    });
+
+    const [cases, activePoints] = await Promise.all([
+      service.deps.getUserCases(guild.id, targetId),
+      service.deps.getActiveWarnPoints(guild.id, targetId, expiryDays),
+    ]);
+
+    const embed = {
+      title: `Moderation History — <@${targetId}>`,
+      description: `Active warning points: **${activePoints}**\nTotal cases: ${cases.length}`,
+      color: 0x5865f2,
+      timestamp: new Date().toISOString(),
+      fields: [] as { name: string; value: string; inline?: boolean }[],
+    };
+
+    if (cases.length === 0) {
+      embed.fields.push({
+        name: "No cases",
+        value: "This user has no moderation cases.",
+        inline: false,
+      });
+    } else {
+      for (const c of cases.slice(0, 20)) {
+        const status = c.undone ? " ~~(undone)~~" : "";
+        const pointsText = c.points > 0 ? ` +${c.points} pts` : "";
+        embed.fields.push({
+          name: `Case #${c.number} — ${c.type}${status}`,
+          value: `**Reason:** ${c.reason}\n**Points:**${pointsText}\n**When:** <t:${Math.floor(c.createdAt.getTime() / 1000)}:R>`,
+          inline: false,
+        });
+      }
+      if (cases.length > 20) {
+        embed.fields.push({
+          name: `And ${cases.length - 20} more...`,
+          value: "Use `/history` to view the full list.",
+          inline: false,
+        });
+      }
+    }
+
+    await interaction.editReply({ embeds: [embed] });
     return;
   }
 
@@ -128,6 +204,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
     getLadderCasesInWindow,
     findCase,
     undoCase,
+    getUserCases,
   });
 
   const undone = await service.undoCase(guild.id, caseNumber, interaction.user.id);

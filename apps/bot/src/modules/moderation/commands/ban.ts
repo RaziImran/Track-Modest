@@ -19,6 +19,7 @@ import {
   setCaseLogMessageId,
   findCase,
   undoCase,
+  getUserCases,
 } from "../repository.js";
 import { encodeId } from "../../../core/componentIds.js";
 import { COLORS } from "../../../core/reply.js";
@@ -271,6 +272,7 @@ export const banCommand: BotCommand = {
       getLadderCasesInWindow,
       findCase,
       undoCase,
+      getUserCases,
     });
 
     // §10.3 Step 2: reserve an atomic case number before the Discord action.

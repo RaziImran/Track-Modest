@@ -159,3 +159,43 @@ export async function undoCase(
     data: { undone: true, undoneBy, undoneAt: new Date() },
   });
 }
+
+export async function getUserCases(
+  guildId: string,
+  targetId: string,
+): Promise<{
+  id: number;
+  number: number;
+  type: string;
+  targetId: string;
+  moderatorId: string;
+  reason: string;
+  durationSec: number | null;
+  points: number;
+  undone: boolean;
+  undoneBy: string | null;
+  undoneAt: Date | null;
+  logMessageId: string | null;
+  createdAt: Date;
+}[]> {
+  const found = await prisma.case.findMany({
+    where: { guildId, targetId },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+  });
+  return found.map((c) => ({
+    id: c.id,
+    number: c.number,
+    type: c.type,
+    targetId: c.targetId,
+    moderatorId: c.moderatorId,
+    reason: c.reason,
+    durationSec: c.durationSec,
+    points: c.points,
+    undone: c.undone,
+    undoneBy: c.undoneBy,
+    undoneAt: c.undoneAt,
+    logMessageId: c.logMessageId,
+    createdAt: c.createdAt,
+  }));
+}

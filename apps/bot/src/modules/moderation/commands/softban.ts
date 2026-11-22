@@ -18,6 +18,7 @@ import {
   incrementCaseCounter,
   findCase,
   undoCase,
+  getUserCases,
 } from "../repository.js";
 import { encodeId } from "../../../core/componentIds.js";
 import { COLORS } from "../../../core/reply.js";
@@ -152,6 +153,7 @@ export const softbanCommand: BotCommand = {
       getLadderCasesInWindow,
       findCase,
       undoCase,
+      getUserCases,
     });
 
     const caseNumber = await service.deps.incrementCaseCounter(guildId);

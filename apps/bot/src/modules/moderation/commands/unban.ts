@@ -77,6 +77,7 @@ export const unbanCommand: BotCommand = {
       getLadderCasesInWindow: async () => [],
       findCase: async () => null,
       undoCase: async () => {},
+      getUserCases: async () => [],
     });
 
     const caseNumber = await service.deps.incrementCaseCounter(guildId);
