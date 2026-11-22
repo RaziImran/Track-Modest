@@ -72,7 +72,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] SEC-01 Join-spike detection with baseline (12.1) — 198d850
 - [x] SEC-02 Suspicion scoring & raid actions with alert buttons (12.1) — 7f71c6a
 - [x] SEC-03 Verification: button, captcha, quiz, account-age, kick-after (12.2) — 322df00
-- [ ] SEC-04 Anti-nuke via audit log with trusted users & bot-add protection (12.3)
+- [x] SEC-04 Anti-nuke via audit log with trusted users & bot-add protection (12.3) — c30453a
 - [ ] SEC-05 Compromised account detection (20.6)
 - [ ] SEC-06 Risk score (15.1)
 - [ ] SEC-07 Mod Review Queue with claim (15.2)
