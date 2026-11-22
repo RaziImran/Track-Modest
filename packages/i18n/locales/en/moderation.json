@@ -196,6 +196,30 @@
       "success": {
         "changed": "{target}'s nickname is now {nickname}."
       }
+    },
+    "context": {
+      "panel": {
+        "title": "Moderate {user}",
+        "summary": "Account age: {accountAge}\nJoined: {joinedAt}",
+        "evidence": "Message content"
+      },
+      "report": {
+        "title": "Report message",
+        "reasonLabel": "Why are you reporting this message?",
+        "reasonPlaceholder": "Describe the violation...",
+        "success": "Report submitted. Moderators will review it."
+      },
+      "error": {
+        "notInServer": "This must be used in a server.",
+        "userNotFound": "User not found.",
+        "messageNotFound": "Message not found.",
+        "hierarchy": "{message}",
+        "invalidDuration": "Invalid duration. Use a value like 1h, 1d, 7d (max 28 days).",
+        "actionFailed": "Failed to {action}. Please check permissions and try again."
+      },
+      "success": {
+        "actioned": "{action} applied to {user}."
+      }
     }
   }
 }
