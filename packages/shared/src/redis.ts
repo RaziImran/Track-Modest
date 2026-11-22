@@ -16,6 +16,7 @@ export const redisKeys = {
   spamDup: (guildId: string, userId: string) => `spam:dup:${guildId}:${userId}`,
   raidJoins: (guildId: string) => `raid:joins:${guildId}`,
   raidBaseline: (guildId: string) => `raid:baseline:${guildId}`,
+  raidState: (guildId: string) => `raid:state:${guildId}`,
   nuke: (guildId: string, executorId: string, action: string) => `nuke:${guildId}:${executorId}:${action}`,
   repDaily: (guildId: string, userId: string, date: string) => `rep:daily:${guildId}:${userId}:${date}`,
   xpCd: (guildId: string, userId: string) => `xp:cd:${guildId}:${userId}`,

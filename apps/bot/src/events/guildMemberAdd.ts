@@ -1,4 +1,12 @@
-import { GuildMember, EmbedBuilder, TextChannel, GuildVerificationLevel } from "discord.js";
+import {
+  GuildMember,
+  EmbedBuilder,
+  TextChannel,
+  GuildVerificationLevel,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+} from "discord.js";
 import { client } from "../client.js";
 import { prisma } from "@modest/db";
 import { getGuildLoggingConfig } from "../modules/logging/repository.js";
@@ -15,6 +23,7 @@ import {
   isRaid,
   getDefaultAvatar,
   accountAgeDays,
+  type RaidState,
 } from "../modules/antiraid/service.js";
 import { AntiraidRepository } from "../modules/antiraid/repository.js";
 import { TemporaryBoostService } from "../modules/config/service.js";
@@ -40,22 +49,28 @@ async function sendModLog(
   title: string,
   body: string,
   color: number,
-): Promise<void> {
+  components?: any[],
+): Promise<{ channelId: string; messageId: string } | null> {
   const modLogChannelId =
     (getCfg(cfg, "modLogChannelId", undefined) as string | undefined) ??
     ((getCfg(cfg, "logChannels", undefined) as Record<string, string> | undefined)?.["modLog"]);
-  if (!modLogChannelId || !guild) return;
+  if (!modLogChannelId || !guild) return null;
   const channel = guild.channels.cache.get(modLogChannelId);
-  if (!channel || !channel.isTextBased()) return;
+  if (!channel || !channel.isTextBased()) return null;
   const embed = new EmbedBuilder()
     .setTitle(title)
     .setDescription(body)
     .setColor(color)
     .setTimestamp();
   try {
-    await (channel as any).send({ embeds: [embed] });
+    const sent = await (channel as any).send({
+      embeds: [embed],
+      ...(components ? { components } : {}),
+    });
+    return { channelId: channel.id, messageId: sent.id };
   } catch {
     // Mod-log channel may be inaccessible; continue without failing the action.
+    return null;
   }
 }
 
@@ -163,24 +178,20 @@ export async function handleGuildMemberAdd(member: GuildMember): Promise<void> {
   });
 
   // 2. Execute raid.action
+  let prevVerifyLevel: number | null = null;
   if (cfg.raidAction === "lock_and_alert" || cfg.raidAction === "lock_kick_new") {
-    // Enable verification for everyone; set guild verification level to High
     try {
-      const previousLevel = guild.verificationLevel;
+      prevVerifyLevel = guild.verificationLevel;
       await guild.setVerificationLevel(GuildVerificationLevel.High);
-      // Store previous level for restoration
-      if (redisUrl) {
-        const redis = (await import("@modest/shared")).createRedis(redisUrl);
-        await redis.set(`raid:prevVerifyLevel:${guildId}`, String(previousLevel), "EX", LOCKDOWN_DURATION_SEC);
-        await redis.disconnect();
-      }
     } catch {
       // Failed to set verification level; continue without failing
     }
   }
 
+  // Compute suspicion scores for recent joiners (for alert buttons)
+  const suspiciousJoiners: { userId: string; score: number }[] = [];
   if (cfg.raidAction === "lock_kick_new") {
-    // Kick members who joined during the window with suspicion score >= 4
+    // Already kicked suspicious accounts above; track them anyway
     try {
       const redis = (await import("@modest/shared")).createRedis(redisUrl);
       const key = `raid:joins:${guildId}`;
@@ -189,7 +200,6 @@ export async function handleGuildMemberAdd(member: GuildMember): Promise<void> {
       const recentJoiners = await redis.zrange(key, 0, -1);
       await redis.disconnect();
 
-      let kickedCount = 0;
       for (const joinedUserId of recentJoiners) {
         const joinedMember = guild.members.cache.get(joinedUserId);
         if (!joinedMember || joinedMember.user.bot) continue;
@@ -202,45 +212,91 @@ export async function handleGuildMemberAdd(member: GuildMember): Promise<void> {
         };
         const score = computeSuspicionScore(signals);
         if (score >= 4) {
-          try {
-            await joinedMember.kick("Anti-raid: high suspicion account during raid");
-            kickedCount += 1;
-          } catch {
-            // Kick failed; continue
-          }
+          suspiciousJoiners.push({ userId: joinedUserId, score });
         }
       }
-
-      if (kickedCount > 0) {
-        await sendModLog(
-          guild,
-          overrides,
-          "🦶 Suspicious accounts kicked",
-          `Kicked ${kickedCount} suspicious account(s) during raid.`,
-          COLORS.warning,
-        );
-      }
     } catch {
-      // Redis failed; skip kick action
+      // Redis failed; skip suspicion scoring
     }
   }
 
+  // Store raid state for alert buttons and boost-end restoration
+  const raidState: RaidState = {
+    suspiciousJoiners,
+    prevVerifyLevel,
+    channelId: "", // filled below after posting alert
+    messageId: "", // filled below after posting alert
+    endsAt: nowMs + LOCKDOWN_DURATION_SEC * 1000,
+    action: cfg.raidAction,
+  };
+
   // 3. Alert in mod-log with @here (only if raid.pingMods is on)
+  // Buttons: Ban all suspicious, Kick all suspicious, End lockdown, False alarm
   if (cfg.raidPingMods) {
-    await sendModLog(
+    const rows = [
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`antiraid:ban_suspicious:${guildId}`)
+          .setLabel("Ban all suspicious")
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId(`antiraid:kick_suspicious:${guildId}`)
+          .setLabel("Kick all suspicious")
+          .setStyle(ButtonStyle.Danger),
+      ),
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`antiraid:end_lockdown:${guildId}`)
+          .setLabel("End lockdown")
+          .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder()
+          .setCustomId(`antiraid:false_alarm:${guildId}`)
+          .setLabel("False alarm")
+          .setStyle(ButtonStyle.Secondary),
+      ),
+    ];
+
+    const pingText = cfg.raidPingMods ? "@here " : "";
+    const result = await sendModLog(
       guild,
       overrides,
       "🚨 Raid detected",
-      `@here ${member.user.tag} — Anti-raid triggered: ${joinsInWindow} joins in ${cfg.raidWindowSec}s (threshold: ${threshold}). Lockdown boost active for 15 minutes. Action: ${cfg.raidAction}`,
+      `${pingText}${member.user.tag} — Anti-raid triggered: ${joinsInWindow} joins in ${cfg.raidWindowSec}s (threshold: ${threshold}). Lockdown boost active for 15 minutes. Action: ${cfg.raidAction}`,
       COLORS.error,
+      rows,
     );
-  } else {
-    await sendModLog(
-      guild,
-      overrides,
-      "🚨 Raid detected",
-      `Anti-raid triggered: ${joinsInWindow} joins in ${cfg.raidWindowSec}s (threshold: ${threshold}). Lockdown boost active for 15 minutes. Action: ${cfg.raidAction}`,
-      COLORS.warning,
-    );
+
+    if (result) {
+      raidState.channelId = result.channelId;
+      raidState.messageId = result.messageId;
+    }
+  }
+
+  // Persist raid state for button handlers and boost-end restoration
+  await repo.setRaidState(guildId, raidState, LOCKDOWN_DURATION_SEC);
+
+  if (cfg.raidAction === "lock_kick_new") {
+    // Kick members who joined during the window with suspicion score >= 4
+    let kickedCount = 0;
+    for (const sj of suspiciousJoiners) {
+      const joinedMember = guild.members.cache.get(sj.userId);
+      if (!joinedMember || joinedMember.user.bot) continue;
+      try {
+        await joinedMember.kick("Anti-raid: high suspicion account during raid");
+        kickedCount += 1;
+      } catch {
+        // Kick failed; continue
+      }
+    }
+
+    if (kickedCount > 0) {
+      await sendModLog(
+        guild,
+        overrides,
+        "🦶 Suspicious accounts kicked",
+        `Kicked ${kickedCount} suspicious account(s) during raid.`,
+        COLORS.warning,
+      );
+    }
   }
 }

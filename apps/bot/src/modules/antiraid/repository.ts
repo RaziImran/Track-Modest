@@ -1,5 +1,6 @@
 // §12.1 Anti-raid repository — Redis operations for join tracking and baseline.
 import { createRedis, redisKeys, type Redis } from "@modest/shared";
+import type { RaidState } from "./service.js";
 
 export interface AntiraidRepositoryDeps {
   redisUrl: string | undefined;
@@ -57,6 +58,33 @@ export class AntiraidRepository {
   async setBaseline(guildId: string, baseline: number): Promise<void> {
     await this.withRedis(async (redis) => {
       await redis.set(redisKeys.raidBaseline(guildId), baseline.toString());
+    });
+  }
+
+  /** Store raid state as JSON with TTL (used by alert buttons and boost-end restoration). */
+  async setRaidState(
+    guildId: string,
+    state: RaidState,
+    ttlSec: number,
+  ): Promise<void> {
+    await this.withRedis(async (redis) => {
+      await redis.set(redisKeys.raidState(guildId), JSON.stringify(state), "EX", ttlSec);
+    });
+  }
+
+  /** Retrieve raid state for a guild. */
+  async getRaidState(guildId: string): Promise<RaidState | null> {
+    const result = await this.withRedis(async (redis) => {
+      const raw = await redis.get(redisKeys.raidState(guildId));
+      return raw ? (JSON.parse(raw) as RaidState) : null;
+    });
+    return result ?? null;
+  }
+
+  /** Clear raid state for a guild. */
+  async clearRaidState(guildId: string): Promise<void> {
+    await this.withRedis(async (redis) => {
+      await redis.del(redisKeys.raidState(guildId));
     });
   }
 }

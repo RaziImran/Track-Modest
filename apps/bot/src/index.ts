@@ -8,6 +8,7 @@ import "./modules/moderation/index.js";
 import "./modules/config/index.js";
 import "./modules/logging/index.js";
 import "./modules/hub/index.js";
+import "./modules/antiraid/index.js";
 import "./events/messageUpdate.js";
 import "./events/messageDelete.js";
 import "./events/messageDeleteBulk.js";

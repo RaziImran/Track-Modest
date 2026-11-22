@@ -43,6 +43,7 @@ async function main(): Promise<void> {
     prisma,
     rest,
     logger,
+    redisUrl,
   });
 
   logger.info({ service: "worker", event: "starting" }, "Worker starting");

@@ -49,3 +49,13 @@ export function getDefaultAvatar(member: GuildMember): boolean {
 export function accountAgeDays(member: GuildMember): number {
   return (Date.now() - member.user.createdTimestamp) / (1000 * 60 * 60 * 24);
 }
+
+/** State stored in Redis when a raid is detected, used by alert buttons and boost-end restoration. */
+export interface RaidState {
+  suspiciousJoiners: { userId: string; score: number }[];
+  prevVerifyLevel: number | null;
+  channelId: string;
+  messageId: string;
+  endsAt: number;
+  action: "alert" | "lock_and_alert" | "lock_kick_new";
+}

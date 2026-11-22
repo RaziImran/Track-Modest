@@ -2,6 +2,7 @@ import { Worker, Job } from "bullmq";
 import { MODERATION_QUEUE } from "./queue.js";
 import type { CaseExpireJobData, BoostEndJobData } from "./queue.js";
 import { CaseExpiryService, type ExpiryDeps } from "./service.js";
+import { createRedis, redisKeys } from "@modest/shared";
 
 export async function processCaseExpire(
   job: Job<CaseExpireJobData>,
@@ -24,10 +25,11 @@ export async function processBoostEnd(
     prisma: any;
     rest: any;
     logger: any;
+    redisUrl: string | undefined;
   },
 ): Promise<void> {
   const { guildId, strictness, endsAt } = job.data;
-  const { prisma, rest, logger } = deps;
+  const { prisma, rest, logger, redisUrl } = deps;
 
   // Delete the TemporaryBoost row.
   try {
@@ -43,6 +45,53 @@ export async function processBoostEnd(
       `Failed to delete TemporaryBoost for guild ${guildId}`,
       err instanceof Error ? err : new Error(String(err)),
     );
+  }
+
+  // §12.1 When a LOCKDOWN boost ends, restore the previous verification level.
+  if (strictness === "LOCKDOWN" && redisUrl) {
+    try {
+      const redis = createRedis(redisUrl);
+      const raw = await redis.get(redisKeys.raidState(guildId));
+      await redis.disconnect();
+
+      if (raw) {
+        const state = JSON.parse(raw);
+        const prevLevel = state?.prevVerifyLevel;
+        if (typeof prevLevel === "number") {
+          try {
+            await rest.patch(
+              `https://discord.com/api/v10/guilds/${guildId}`,
+              { body: { verification_level: prevLevel } },
+            );
+            logger.info(
+              { service: "worker", event: "boost-end:verify-restored", guildId },
+              `Restored verification level to ${prevLevel} after raid lockdown.`,
+            );
+          } catch (err) {
+            logger.error(
+              { service: "worker", event: "boost-end:verify-restore-failed", guildId },
+              `Failed to restore verification level for guild ${guildId}`,
+              err instanceof Error ? err : new Error(String(err)),
+            );
+          }
+        }
+
+        // Clear raid state once the boost ends (whether or not restoration succeeded).
+        try {
+          const redis = createRedis(redisUrl);
+          await redis.del(redisKeys.raidState(guildId));
+          await redis.disconnect();
+        } catch {
+          // Best-effort cleanup.
+        }
+      }
+    } catch (err) {
+      logger.error(
+        { service: "worker", event: "boost-end:raid-state-failed", guildId },
+        `Failed to read raid state for guild ${guildId}`,
+        err instanceof Error ? err : new Error(String(err)),
+      );
+    }
   }
 
   // Look up the mod-log channel and post "Protection returned to Balanced."
@@ -103,6 +152,7 @@ export function createBoostEndWorker(
     prisma: any;
     rest: any;
     logger: any;
+    redisUrl: string | undefined;
   },
 ): Worker<BoostEndJobData> {
   return new Worker<BoostEndJobData>(
