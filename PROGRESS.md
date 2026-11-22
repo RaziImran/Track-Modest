@@ -78,7 +78,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] SEC-07 Mod Review Queue with claim (15.2) — 9c33d2b
 - [x] SEC-08 Raid prediction (15.3) — 67e2bfc
 - [x] SEC-09 Shadow mode for rules & profiles (15.4) — 0f19891
-- [ ] SEC-10 Shared ban network (2-guild confirmation, appeals) (15.5)
+- [x] SEC-10 Shared ban network (2-guild confirmation, appeals) (15.5) — f272156
 
 ### Logging (LOG)
 - [x] LOG-01 Message edit/delete/bulk delete (13.1) — 9cab6d8
