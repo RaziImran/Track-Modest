@@ -20,6 +20,7 @@ export const redisKeys = {
   nuke: (guildId: string, executorId: string, action: string) => `nuke:${guildId}:${executorId}:${action}`,
   compromisedLink: (guildId: string, userId: string, linkHash: string) => `compromised:links:${guildId}:${userId}:${linkHash}`,
   riskScore: (guildId: string, userId: string) => `risk:score:${guildId}:${userId}`,
+  raidPredictionJoins: (guildId: string) => `raid:prediction:joins:${guildId}`,
   repDaily: (guildId: string, userId: string, date: string) => `rep:daily:${guildId}:${userId}:${date}`,
   xpCd: (guildId: string, userId: string) => `xp:cd:${guildId}:${userId}`,
   aiUser: (guildId: string, userId: string, date: string) => `ai:user:${guildId}:${userId}:${date}`,
