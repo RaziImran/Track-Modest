@@ -338,3 +338,110 @@ describe("ModerationService.getDefaultLadder", () => {
     expect(ModerationService.getDefaultLadder("UNKNOWN" as any)).toEqual([]);
   });
 });
+
+describe("ModerationService.applyMassBan", () => {
+  it("increments the counter for each user, creates BAN cases, applies -100 rep penalty each, and returns results", async () => {
+    const deps = baseDeps();
+    deps.incrementCaseCounter
+      .mockResolvedValueOnce(10)
+      .mockResolvedValueOnce(11)
+      .mockResolvedValueOnce(12);
+    deps.createCase
+      .mockResolvedValueOnce({ id: 100, number: 10 })
+      .mockResolvedValueOnce({ id: 101, number: 11 })
+      .mockResolvedValueOnce({ id: 102, number: 12 });
+    deps.applyRepPenalty.mockResolvedValue(-100);
+
+    const service = new ModerationService(deps);
+    const result = await service.applyMassBan("g1", ["u1", "u2", "u3"], "m1", "raiding");
+
+    expect(deps.incrementCaseCounter).toHaveBeenCalledTimes(3);
+    expect(deps.incrementCaseCounter).toHaveBeenNthCalledWith(1, "g1");
+    expect(deps.incrementCaseCounter).toHaveBeenNthCalledWith(2, "g1");
+    expect(deps.incrementCaseCounter).toHaveBeenNthCalledWith(3, "g1");
+
+    expect(deps.createCase).toHaveBeenCalledTimes(3);
+    expect(deps.createCase).toHaveBeenNthCalledWith(1, {
+      guildId: "g1",
+      type: "BAN",
+      targetId: "u1",
+      moderatorId: "m1",
+      reason: "raiding",
+      points: 0,
+      caseNumber: 10,
+      automatic: false,
+    });
+    expect(deps.createCase).toHaveBeenNthCalledWith(2, {
+      guildId: "g1",
+      type: "BAN",
+      targetId: "u2",
+      moderatorId: "m1",
+      reason: "raiding",
+      points: 0,
+      caseNumber: 11,
+      automatic: false,
+    });
+    expect(deps.createCase).toHaveBeenNthCalledWith(3, {
+      guildId: "g1",
+      type: "BAN",
+      targetId: "u3",
+      moderatorId: "m1",
+      reason: "raiding",
+      points: 0,
+      caseNumber: 12,
+      automatic: false,
+    });
+
+    expect(deps.applyRepPenalty).toHaveBeenCalledTimes(3);
+    expect(deps.applyRepPenalty).toHaveBeenNthCalledWith(1, "g1", "u1", -100);
+    expect(deps.applyRepPenalty).toHaveBeenNthCalledWith(2, "g1", "u2", -100);
+    expect(deps.applyRepPenalty).toHaveBeenNthCalledWith(3, "g1", "u3", -100);
+
+    expect(result).toEqual({
+      caseNumbers: [10, 11, 12],
+      caseIds: [100, 101, 102],
+      bannedUserIds: ["u1", "u2", "u3"],
+      failedUserIds: [],
+    });
+  });
+
+  it("tracks failed users when createCase throws", async () => {
+    const deps = baseDeps();
+    deps.incrementCaseCounter
+      .mockResolvedValueOnce(10)
+      .mockResolvedValueOnce(11);
+    deps.createCase
+      .mockResolvedValueOnce({ id: 100, number: 10 })
+      .mockRejectedValueOnce(new Error("DB error"));
+    deps.applyRepPenalty.mockResolvedValue(-100);
+
+    const service = new ModerationService(deps);
+    const result = await service.applyMassBan("g1", ["u1", "u2"], "m1", "raiding");
+
+    expect(deps.incrementCaseCounter).toHaveBeenCalledTimes(2);
+    expect(deps.createCase).toHaveBeenCalledTimes(2);
+    expect(deps.applyRepPenalty).toHaveBeenCalledTimes(1);
+    expect(result).toEqual({
+      caseNumbers: [10],
+      caseIds: [100],
+      bannedUserIds: ["u1"],
+      failedUserIds: ["u2"],
+    });
+  });
+
+  it("handles empty target list", async () => {
+    const deps = baseDeps();
+    const service = new ModerationService(deps);
+    const result = await service.applyMassBan("g1", [], "m1", "raiding");
+
+    expect(deps.incrementCaseCounter).not.toHaveBeenCalled();
+    expect(deps.createCase).not.toHaveBeenCalled();
+    expect(deps.applyRepPenalty).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      caseNumbers: [],
+      caseIds: [],
+      bannedUserIds: [],
+      failedUserIds: [],
+    });
+  });
+});

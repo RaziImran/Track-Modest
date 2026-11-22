@@ -38,6 +38,13 @@ export interface ModerationServiceDeps {
   ) => Promise<ModCaseType[]>;
 }
 
+export interface MassBanResult {
+  caseNumbers: number[];
+  caseIds: number[];
+  bannedUserIds: string[];
+  failedUserIds: string[];
+}
+
 export class ModerationService {
   public deps: ModerationServiceDeps;
 
@@ -199,6 +206,42 @@ export class ModerationService {
       automatic: false,
     });
     return { caseNumber, caseId: created.id };
+  }
+
+  async applyMassBan(
+    guildId: string,
+    targetIds: string[],
+    moderatorId: string,
+    reason: string,
+  ): Promise<MassBanResult> {
+    const caseNumbers: number[] = [];
+    const caseIds: number[] = [];
+    const bannedUserIds: string[] = [];
+    const failedUserIds: string[] = [];
+
+    for (const targetId of targetIds) {
+      try {
+        const caseNumber = await this.deps.incrementCaseCounter(guildId);
+        const created = await this.deps.createCase({
+          guildId,
+          type: "BAN",
+          targetId,
+          moderatorId,
+          reason,
+          points: 0,
+          caseNumber,
+          automatic: false,
+        });
+        await this.deps.applyRepPenalty(guildId, targetId, -100);
+        caseNumbers.push(caseNumber);
+        caseIds.push(created.id);
+        bannedUserIds.push(targetId);
+      } catch {
+        failedUserIds.push(targetId);
+      }
+    }
+
+    return { caseNumbers, caseIds, bannedUserIds, failedUserIds };
   }
 
   /**

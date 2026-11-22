@@ -149,3 +149,38 @@ export function validateCaseUndo(raw: unknown): CaseUndoInput | { error: string 
   }
   return parsed.data;
 }
+
+const MAX_MASSBAN_USERS = 200;
+
+function parseUserIds(input: string): string[] {
+  const mentions = input.match(/<@!?(\d+)>/g) ?? [];
+  const idsFromMentions = mentions.map((m) => m.replace(/<@!?(\d+)>/, "$1"));
+  const remaining = input.replace(/<@!?\d+>/g, "");
+  const idsFromText = remaining
+    .split(/[\s,]+/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0 && /^\d+$/.test(s));
+  return [...new Set([...idsFromMentions, ...idsFromText])];
+}
+
+export const MassBanCommandInputSchema = z.object({
+  users: z.string().min(1, "At least one user is required"),
+  reason: z.string().min(1, "Reason is required").max(1000, "Reason too long"),
+});
+
+export type MassBanCommandInput = z.infer<typeof MassBanCommandInputSchema>;
+
+export function validateMassBanInput(raw: unknown): { userIds: string[]; reason: string } | { error: string } {
+  const parsed = MassBanCommandInputSchema.safeParse(raw);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input" };
+  }
+  const userIds = parseUserIds(parsed.data.users);
+  if (userIds.length === 0) {
+    return { error: "No valid user IDs found" };
+  }
+  if (userIds.length > MAX_MASSBAN_USERS) {
+    return { error: `Cannot massban more than ${MAX_MASSBAN_USERS} users at once` };
+  }
+  return { userIds, reason: parsed.data.reason };
+}

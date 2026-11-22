@@ -97,6 +97,30 @@
         "actionFailed": "The ban failed. Please check my permissions and role hierarchy, then try again."
       },
       "success": "Case #{caseNumber} — {user} was banned{duration}."
+    },
+    "massban": {
+      "dm": {
+        "title": "You were banned from {guild}",
+        "body": "**Server:** {guild}\n**Reason:** {reason}\n**Moderator:** {moderator}"
+      },
+      "modlog": {
+        "title": "Member banned (massban)",
+        "body": "Case #{case} — {target} was banned by {moderator}\n**Reason:** {reason}"
+      },
+      "error": {
+        "hierarchy": "{message}",
+        "notInServer": "This command must be used in a server.",
+        "cannotTargetBot": "I cannot ban myself.",
+        "cannotTargetSelf": "You cannot ban yourself.",
+        "removedSelfBot": "Removed {count} invalid target(s) (self or bot).",
+        "noValidTargets": "No valid targets remaining after filtering.",
+        "missingPermissions": "I'm missing permissions to do that. Please move my role above theirs in Server Settings → Roles and grant me the Ban Members permission.",
+        "actionFailed": "The ban failed. Please check my permissions and role hierarchy, then try again.",
+        "allFailed": "Failed to ban any users. Please check my permissions and role hierarchy."
+      },
+      "confirm": "Are you sure you want to ban **{count}** user(s)? This action cannot be undone in bulk.",
+      "cancelled": "Mass ban cancelled.",
+      "success": "Mass ban complete: **{successCount}** banned, **{failCount}** failed. Cases: #{caseNumbers}."
     }
   }
 }
