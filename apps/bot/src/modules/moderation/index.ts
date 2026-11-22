@@ -14,6 +14,7 @@ import { historyCommand } from "./commands/history.js";
 import { modstatsCommand } from "./commands/modstats.js";
 import { noteCommand } from "./commands/note.js";
 import { reportCommand } from "./commands/report.js";
+import { staffActivityCommand } from "./commands/staffactivity.js";
 import {
   moderateUserCommand,
   moderateMessageCommand,
@@ -52,6 +53,7 @@ registerCommand(historyCommand, import.meta.url);
 registerCommand(modstatsCommand, import.meta.url);
 registerCommand(noteCommand, import.meta.url);
 registerCommand(reportCommand, import.meta.url);
+registerCommand(staffActivityCommand, import.meta.url);
 registerCommand(moderateUserCommand, import.meta.url);
 registerCommand(moderateMessageCommand, import.meta.url);
 registerCommand(reportMessageCommand, import.meta.url);

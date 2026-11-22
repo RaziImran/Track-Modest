@@ -52,3 +52,11 @@ Every deviation, assumption or choice not specified in BOT_DESIGN_SPEC.md, with 
 | Max users | 200 users per command invocation (enforced by schema validation). |
 | Self/bot protection | Filters out the bot itself and the command invoker from the target list before processing. |
 | Hierarchy checks | Performed for all targets that are current guild members. Users not in the server are still banned (via bulkBan which accepts user IDs). |
+
+## MOD-17 (Appeals via dashboard, §14.3) — BLOCKED
+
+| Topic | Decision |
+|---|---|
+| Blocker | MOD-17 requires a Next.js + Auth.js dashboard website with OAuth login, appeal form page, and appeal review page (Approve/Deny/Discuss). The `@modest/dashboard` package only contains `export {};` — no pages, no Auth.js setup, no Next.js config. Building the full dashboard is a prerequisite beyond a single task card. |
+| Closest alternative | The appeal link URL is already wired in MOD-11 (`/ban` DM includes an **Appeal** link button pointing to `https://<dashboard>/appeal/<guildId>`), and the `Appeal` Prisma model already exists in the schema. When the dashboard is built, MOD-17 can be completed by adding the appeal form and review pages. |
+| Action | Moving to independent bot-side cards (MOD-18, MOD-19, MOD-20). |

@@ -316,6 +316,16 @@
         "rateLimited": "You can only submit 5 reports per hour. Please try again later.",
         "hierarchy": "{message}"
       }
+    },
+    "staffactivity": {
+      "title": "Staff Activity Report",
+      "summary": "{total} staff members tracked.",
+      "noInactive": "No inactive staff",
+      "noInactiveBody": "All staff members have had at least one moderation action in the last 30 days.",
+      "inactiveStaff": "{count} staff with zero actions in 30 days",
+      "error": {
+        "notInServer": "This command must be used in a server."
+      }
     }
   }
 }
