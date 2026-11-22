@@ -461,6 +461,30 @@
         "notInServer": "This must be used in a server.",
         "notParticipating": "This server is not participating in the shared ban network."
       }
+    },
+    "automod": {
+      "title": "AutoMod",
+      "enabled": "AutoMod is active on this server.",
+      "disabled": "AutoMod is disabled on this server.",
+      "notice": "🛡️ <@{userId}>, your message was removed: {reason}.",
+      "dm": "Your message in **{guild}** was removed by AutoMod: {reason}.\nIf you think this is a mistake, contact the moderators.",
+      "check:phishing": "Phishing/scam link detected ({domain}).",
+      "check:invite": "Discord invite link not allowed.",
+      "check:links": "Link not allowed by link policy ({mode}).",
+      "check:mentions": "Too many mentions ({score}/{max}).",
+      "check:mentions_roles": "Too many role mentions ({roleCount}/{max}).",
+      "check:rate": "Message rate limit exceeded ({max}/{windowSec}s).",
+      "check:duplicate": "Duplicate message detected ({count}/{max}).",
+      "check:duplicate_crosschannel": "Same message posted in too many channels ({channelCount}).",
+      "check:badwords": "Bad word detected: {matchedWord}.",
+      "check:caps": "Too much uppercase text ({percent}% > {max}%).",
+      "check:emoji": "Too many emojis ({count} > {max}).",
+      "check:newlines": "Too many newlines ({count} > {max}).",
+      "check:zalgo": "Zalgo text detected.",
+      "check:custom": "Custom rule matched: {ruleName}.",
+      "error": {
+        "notInServer": "This must be used in a server."
+      }
     }
   }
 }

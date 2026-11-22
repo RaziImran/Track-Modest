@@ -47,6 +47,7 @@ export const CATEGORY_SETTINGS: Record<SettingsCategory, string[]> = {
     "automod.firstAction",
     "automod.timeoutSec",
     "shadow.mode",
+    "automod.enabled",
   ],
   Logging: ["logging.verbosity", "modQueueChannelId"],
   Welcome: [],
@@ -117,6 +118,7 @@ export const SETTING_LABELS: Record<string, string> = {
   "automod.firstAction": "AutoMod first action",
   "automod.timeoutSec": "AutoMod timeout (sec)",
   "shadow.mode": "Shadow mode duration (days)",
+  "automod.enabled": "AutoMod enabled",
 };
 
 export const MODULE_LABELS: Record<string, string> = {
