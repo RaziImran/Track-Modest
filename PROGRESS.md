@@ -77,7 +77,7 @@ Copy of spec Â§45. Tick each ID when done, with date & commit hash.
 - [x] SEC-06 Risk score (15.1) — 6803fc0
 - [x] SEC-07 Mod Review Queue with claim (15.2) — 9c33d2b
 - [x] SEC-08 Raid prediction (15.3) — 67e2bfc
-- [ ] SEC-09 Shadow mode for rules & profiles (15.4)
+- [x] SEC-09 Shadow mode for rules & profiles (15.4) — 0f19891
 - [ ] SEC-10 Shared ban network (2-guild confirmation, appeals) (15.5)
 
 ### Logging (LOG)
