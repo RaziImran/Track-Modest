@@ -281,6 +281,69 @@ export interface EmojiUpdateLogData {
   timestamp: number;
 }
 
+export interface GhostPingData {
+  guildId: string;
+  channelId: string;
+  authorId: string;
+  authorTag: string;
+  authorAvatarUrl: string | null;
+  mentionedUserIds: string[];
+  content: string | null;
+  messageUrl: string;
+  timestamp: number;
+  deleteTime: number;
+  timeToDelete: number;
+}
+
+export interface GhostPingResult {
+  isGhostPing: boolean;
+  mentionedUserIds: string[];
+  timeToDelete: number;
+}
+
+export function detectGhostPing(
+  content: string | null,
+  mentionedUserIds: string[],
+  messageTimestamp: number,
+  deleteTimestamp: number,
+): GhostPingResult {
+  if (!content || mentionedUserIds.length === 0) {
+    return { isGhostPing: false, mentionedUserIds: [], timeToDelete: 0 };
+  }
+
+  const timeToDelete = deleteTimestamp - messageTimestamp;
+  if (timeToDelete > 60000) {
+    return { isGhostPing: false, mentionedUserIds: [], timeToDelete };
+  }
+
+  return { isGhostPing: true, mentionedUserIds, timeToDelete };
+}
+
+export function detectGhostPingFromEdit(
+  _oldContent: string | null,
+  _newContent: string | null,
+  oldMentions: string[],
+  newMentions: string[],
+  messageTimestamp: number,
+  editTimestamp: number,
+): GhostPingResult {
+  const removedMentions = oldMentions.filter((id) => !newMentions.includes(id));
+  if (removedMentions.length === 0) {
+    return { isGhostPing: false, mentionedUserIds: [], timeToDelete: 0 };
+  }
+
+  const timeToEdit = editTimestamp - messageTimestamp;
+  if (timeToEdit > 60000) {
+    return { isGhostPing: false, mentionedUserIds: [], timeToDelete: timeToEdit };
+  }
+
+  return { isGhostPing: true, mentionedUserIds: removedMentions, timeToDelete: timeToEdit };
+}
+
+export function shouldNotifyGhostPing(guildConfig: GuildLoggingConfig): boolean {
+  return getGhostPingNotify(guildConfig);
+}
+
 export function formatRoleUpdate(data: RoleUpdateLogData): RoleUpdateLogData { return data; }
 export function formatChannelEvent(data: ChannelEventLogData): ChannelEventLogData { return data; }
 export function formatVoiceEvent(data: VoiceEventLogData): VoiceEventLogData { return data; }

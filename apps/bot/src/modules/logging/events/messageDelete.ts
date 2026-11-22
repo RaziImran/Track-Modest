@@ -7,8 +7,10 @@ import {
   shouldIgnore,
   shouldLogCategory,
   resolveLogChannel,
+  detectGhostPing,
+  shouldNotifyGhostPing,
 } from "../service.js";
-import { buildDeleteEmbed, sendLogMessage } from "../embeds.js";
+import { buildDeleteEmbed, buildGhostPingEmbed, sendLogMessage } from "../embeds.js";
 
 export async function handleMessageDelete(message: Message | PartialMessage): Promise<void> {
   if (!message.guild) return;
@@ -44,6 +46,12 @@ export async function handleMessageDelete(message: Message | PartialMessage): Pr
     })),
   }, wasCached);
 
+  // Detect ghost ping
+  const mentionedUserIds = extractMentionedUserIds(message.content ?? "");
+  const deleteTime = Date.now();
+  const messageTime = message.createdTimestamp ?? deleteTime;
+  const ghostPingResult = detectGhostPing(data.content, mentionedUserIds, messageTime, deleteTime);
+
   const embed = buildDeleteEmbed(
     {
       guildId,
@@ -60,5 +68,36 @@ export async function handleMessageDelete(message: Message | PartialMessage): Pr
     (key: string) => key,
   );
 
+  await sendLogMessage(logChannel, embed);
+
+  // Send ghost ping notification if detected
+  if (ghostPingResult.isGhostPing && shouldNotifyGhostPing(guildConfig)) {
+    await sendGhostPingNotification(logChannel, {
+      guildId,
+      channelId,
+      authorId: message.author.id,
+      authorTag: message.author.tag,
+      authorAvatarUrl: message.author.displayAvatarURL(),
+      mentionedUserIds: ghostPingResult.mentionedUserIds,
+      content: data.content,
+      messageUrl: getMessageUrl(guildId, channelId, message.id),
+      timestamp: Date.now(),
+      deleteTime,
+      timeToDelete: ghostPingResult.timeToDelete,
+    });
+  }
+}
+
+function extractMentionedUserIds(content: string): string[] {
+  const mentionRegex = /<@!?(\d+)>/g;
+  const matches = content.matchAll(mentionRegex);
+  return Array.from(matches, (m) => m[1]).filter((id): id is string => id !== undefined);
+}
+
+async function sendGhostPingNotification(
+  logChannel: TextChannel,
+  ghostPingData: Parameters<typeof buildGhostPingEmbed>[0],
+): Promise<void> {
+  const embed = buildGhostPingEmbed(ghostPingData, (key: string) => key);
   await sendLogMessage(logChannel, embed);
 }

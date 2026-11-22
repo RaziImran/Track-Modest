@@ -14,6 +14,10 @@ import {
   formatAvatarChange,
   LOG_COLORS,
   LOG_CATEGORY_COLORS,
+  detectGhostPing,
+  detectGhostPingFromEdit,
+  shouldNotifyGhostPing,
+  getGhostPingNotify,
 } from "./service.js";
 import type { GuildLoggingConfig } from "./repository.js";
 import type { MemberJoinLogData, MemberLeaveLogData, NicknameChangeLogData, AvatarChangeLogData } from "./service.js";
@@ -27,10 +31,22 @@ const mockGuildConfig: GuildLoggingConfig = {
       verbosity: "all",
       ignoredChannels: ["ignored-channel"],
       ignoredRoles: ["ignored-role"],
-      ghostPingNotify: false,
+      ghostPingNotify: true,
     },
   },
   sizeTier: "SMALL",
+};
+
+const mockGuildConfigNoNotify: GuildLoggingConfig = {
+  ...mockGuildConfig,
+  overrides: {
+    logging: {
+      verbosity: "all",
+      ignoredChannels: ["ignored-channel"],
+      ignoredRoles: ["ignored-role"],
+      ghostPingNotify: false,
+    },
+  },
 };
 
 describe("logging service", () => {
@@ -165,6 +181,143 @@ describe("logging service", () => {
     it("generates correct Discord message URL", () => {
       const url = getMessageUrl("guild123", "channel123", "msg123");
       expect(url).toBe("https://discord.com/channels/guild123/channel123/msg123");
+    });
+  });
+
+  describe("detectGhostPing", () => {
+    it("returns ghost ping when message deleted within 60s with mentions", () => {
+      const result = detectGhostPing("Hello <@12345>!", ["12345"], 1000, 1000 + 30000);
+      expect(result.isGhostPing).toBe(true);
+      expect(result.mentionedUserIds).toEqual(["12345"]);
+      expect(result.timeToDelete).toBe(30000);
+    });
+
+    it("returns no ghost ping when message deleted after 60s", () => {
+      const result = detectGhostPing("Hello <@12345>!", ["12345"], 1000, 1000 + 61000);
+      expect(result.isGhostPing).toBe(false);
+      expect(result.mentionedUserIds).toEqual([]);
+      expect(result.timeToDelete).toBe(61000);
+    });
+
+    it("returns no ghost ping when no mentions", () => {
+      const result = detectGhostPing("Hello world!", [], 1000, 1000 + 30000);
+      expect(result.isGhostPing).toBe(false);
+      expect(result.mentionedUserIds).toEqual([]);
+      expect(result.timeToDelete).toBe(0);
+    });
+
+    it("returns no ghost ping when content is null", () => {
+      const result = detectGhostPing(null, ["12345"], 1000, 1000 + 30000);
+      expect(result.isGhostPing).toBe(false);
+      expect(result.mentionedUserIds).toEqual([]);
+      expect(result.timeToDelete).toBe(0);
+    });
+
+    it("returns no ghost ping when content is empty", () => {
+      const result = detectGhostPing("", ["12345"], 1000, 1000 + 30000);
+      expect(result.isGhostPing).toBe(false);
+      expect(result.mentionedUserIds).toEqual([]);
+      expect(result.timeToDelete).toBe(0);
+    });
+
+    it("handles multiple mentions", () => {
+      const result = detectGhostPing("<@123> <@456> test", ["123", "456"], 1000, 1000 + 10000);
+      expect(result.isGhostPing).toBe(true);
+      expect(result.mentionedUserIds).toEqual(["123", "456"]);
+    });
+  });
+
+  describe("detectGhostPingFromEdit", () => {
+    it("returns ghost ping when edit removes a mention within 60s", () => {
+      const result = detectGhostPingFromEdit(
+        "Hello <@12345>!",
+        "Hello!",
+        ["12345"],
+        [],
+        1000,
+        1000 + 30000,
+      );
+      expect(result.isGhostPing).toBe(true);
+      expect(result.mentionedUserIds).toEqual(["12345"]);
+      expect(result.timeToDelete).toBe(30000);
+    });
+
+    it("returns no ghost ping when edit does not remove mentions", () => {
+      const result = detectGhostPingFromEdit(
+        "Hello <@12345>!",
+        "Hello <@12345>! How are you?",
+        ["12345"],
+        ["12345"],
+        1000,
+        1000 + 30000,
+      );
+      expect(result.isGhostPing).toBe(false);
+      expect(result.mentionedUserIds).toEqual([]);
+    });
+
+    it("returns no ghost ping when edit removes mention after 60s", () => {
+      const result = detectGhostPingFromEdit(
+        "Hello <@12345>!",
+        "Hello!",
+        ["12345"],
+        [],
+        1000,
+        1000 + 61000,
+      );
+      expect(result.isGhostPing).toBe(false);
+      expect(result.mentionedUserIds).toEqual([]);
+      expect(result.timeToDelete).toBe(61000);
+    });
+
+    it("returns no ghost ping when no mentions in old content", () => {
+      const result = detectGhostPingFromEdit(
+        "Hello world!",
+        "Hello!",
+        [],
+        [],
+        1000,
+        1000 + 30000,
+      );
+      expect(result.isGhostPing).toBe(false);
+      expect(result.mentionedUserIds).toEqual([]);
+    });
+
+    it("handles multiple removed mentions", () => {
+      const result = detectGhostPingFromEdit(
+        "<@123> <@456> test",
+        "test",
+        ["123", "456"],
+        [],
+        1000,
+        1000 + 10000,
+      );
+      expect(result.isGhostPing).toBe(true);
+      expect(result.mentionedUserIds).toEqual(["123", "456"]);
+    });
+
+    it("handles partial mention removal", () => {
+      const result = detectGhostPingFromEdit(
+        "<@123> <@456> test",
+        "<@123> test",
+        ["123", "456"],
+        ["123"],
+        1000,
+        1000 + 10000,
+      );
+      expect(result.isGhostPing).toBe(true);
+      expect(result.mentionedUserIds).toEqual(["456"]);
+    });
+  });
+
+  describe("shouldNotifyGhostPing / getGhostPingNotify", () => {
+    it("returns true when ghostPingNotify is enabled", () => {
+      expect(shouldNotifyGhostPing(mockGuildConfig)).toBe(true);
+      expect(getGhostPingNotify(mockGuildConfig)).toBe(true);
+    });
+
+    it("returns false when ghostPingNotify is disabled", () => {
+      expect(shouldNotifyGhostPing(mockGuildConfigNoNotify)).toBe(false);
+      expect(getGhostPingNotify(mockGuildConfigNoNotify)).toBe(false);
     });
   });
 

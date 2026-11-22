@@ -6,7 +6,7 @@ import {
   AttachmentBuilder,
   TextChannel,
 } from "discord.js";
-import type { EditLogData, DeleteLogData, BulkDeleteLogData, MemberJoinLogData, MemberLeaveLogData, NicknameChangeLogData, AvatarChangeLogData, RoleUpdateLogData, ChannelEventLogData, VoiceEventLogData, InviteEventLogData, GuildUpdateLogData, EmojiUpdateLogData } from "./service.js";
+import type { EditLogData, DeleteLogData, BulkDeleteLogData, MemberJoinLogData, MemberLeaveLogData, NicknameChangeLogData, AvatarChangeLogData, RoleUpdateLogData, ChannelEventLogData, VoiceEventLogData, InviteEventLogData, GuildUpdateLogData, EmojiUpdateLogData, GhostPingData } from "./service.js";
 import { getCategoryColor, formatAttachments, formatContent, LOG_COLORS } from "./service.js";
 
 export function buildEditEmbed(
@@ -247,4 +247,29 @@ export function guildUpdateEmbed(data: GuildUpdateLogData, t: (key: string, para
 }
 export function emojiUpdateEmbed(data: EmojiUpdateLogData, t: (key: string, params?: Record<string, unknown>) => string): EmbedBuilder {
   return new EmbedBuilder().setColor(getCategoryColor("server")).setTitle(t("logging.emoji.update.title")).setDescription(data.changes.join("\n")).setTimestamp(data.timestamp);
+}
+
+export function buildGhostPingEmbed(
+  data: GhostPingData,
+  t: (key: string, params?: Record<string, unknown>) => string,
+): EmbedBuilder {
+  const mentions = data.mentionedUserIds.map((id) => `<@${id}>`).join(", ");
+  const embed = new EmbedBuilder()
+    .setColor(LOG_COLORS.WARNING)
+    .setAuthor({ name: data.authorTag, iconURL: data.authorAvatarUrl ?? undefined })
+    .setTitle(t("logging.ghostPing.title"))
+    .setDescription(t("logging.ghostPing.description", {
+      channel: `<#${data.channelId}>`,
+      author: `<@${data.authorId}>`,
+      mentions,
+      url: data.messageUrl,
+    }))
+    .addFields(
+      { name: t("logging.ghostPing.content"), value: formatContent(data.content), inline: false },
+      { name: t("logging.ghostPing.timeToDelete"), value: t("logging.ghostPing.timeFormat", { seconds: Math.round(data.timeToDelete / 1000) }), inline: true },
+    )
+    .setTimestamp(data.timestamp)
+    .setFooter({ text: t("logging.ghostPing.footer", { messageId: data.messageUrl.split("/").pop() ?? "unknown" }) });
+
+  return embed;
 }
