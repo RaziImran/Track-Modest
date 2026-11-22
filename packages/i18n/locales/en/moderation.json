@@ -81,7 +81,9 @@
     "ban": {
       "dm": {
         "title": "You were banned from {guild}",
-        "body": "**Server:** {guild}\n**Reason:** {reason}{duration}\n**Moderator:** {moderator}"
+        "body": "**Server:** {guild}\n**Reason:** {reason}{duration}\n**Moderator:** {moderator}",
+        "appealButton": "Appeal this ban",
+        "appealFooter": "\n\nIf you think this is a mistake, you can appeal below."
       },
       "modlog": {
         "title": "Member banned",
@@ -97,6 +99,25 @@
         "actionFailed": "The ban failed. Please check my permissions and role hierarchy, then try again."
       },
       "success": "Case #{caseNumber} — {user} was banned{duration}."
+    },
+    "softban": {
+      "dm": {
+        "title": "You were softbanned from {guild}",
+        "body": "**Server:** {guild}\n**Reason:** {reason}\n**Moderator:** {moderator}\n\nA softban removes your messages and bans you briefly, then unbans you. You can rejoin the server."
+      },
+      "modlog": {
+        "title": "Member softbanned",
+        "body": "Case #{case} — {target} was softbanned by {moderator}\n**Reason:** {reason}"
+      },
+      "error": {
+        "hierarchy": "{message}",
+        "notInServer": "That user is not in this server.",
+        "cannotTargetBot": "I cannot softban a bot.",
+        "cannotTargetSelf": "You cannot softban yourself.",
+        "missingPermissions": "I'm missing permissions to do that. Please move my role above theirs in Server Settings → Roles and grant me the Ban Members permission.",
+        "actionFailed": "The softban failed. Please check my permissions and role hierarchy, then try again."
+      },
+      "success": "Case #{caseNumber} — {user} was softbanned."
     },
     "massban": {
       "dm": {

@@ -61,9 +61,11 @@ async function sendDm(
   reason: string,
   durationSec: number | undefined,
   cfg: any,
+  appealUrl: string | null,
 ): Promise<void> {
   const t = ctx.t as (key: string, params?: Record<string, unknown>) => string;
   const durationLine = durationSec ? `\n**Duration:** ${formatDuration(durationSec)}` : "";
+  const appealFooter = appealUrl ? t("moderation:ban:dm.appealFooter") : "";
   const embed = new EmbedBuilder()
     .setTitle(t("moderation:ban:dm.title"))
     .setDescription(
@@ -72,12 +74,26 @@ async function sendDm(
         reason,
         duration: durationLine,
         moderator: moderatorName(ctx.interaction as any, cfg),
-      }),
+      }) + appealFooter,
     )
     .setColor(COLORS.moderation.ban)
     .setTimestamp();
+
+  const components: any[] = [];
+  if (appealUrl) {
+    components.push({
+      type: 1,
+      components: [
+        new ButtonBuilder()
+          .setLabel(t("moderation:ban:dm.appealButton"))
+          .setStyle(ButtonStyle.Link)
+          .setURL(appealUrl),
+      ],
+    });
+  }
+
   try {
-    await targetUser.send({ embeds: [embed] });
+    await targetUser.send({ embeds: [embed], ...(components.length > 0 ? { components } : {}) });
   } catch {
     // DMs may be closed; a ban removes the user from the server so we always DM first.
   }
@@ -257,7 +273,10 @@ export const banCommand: BotCommand = {
     const caseNumber = await service.deps.incrementCaseCounter(guildId);
 
     // §10.3 Step 3: DM BEFORE the action — a ban removes the user from the server.
-    await sendDm(ctx, guild, targetUser, cleanReason, durationSec, cfg);
+    const appealUrl = (cfg as any)?.appeals?.enabled
+      ? `https://${(cfg as any)?.appeals?.dashboardUrl ?? "dashboard.modest.app"}/appeal/${guildId}`
+      : null;
+    await sendDm(ctx, guild, targetUser, cleanReason, durationSec, cfg, appealUrl);
 
     // §10.3 Step 4: perform the Discord action. On failure, do NOT create the case.
     try {

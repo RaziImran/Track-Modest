@@ -2,6 +2,7 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  EmbedBuilder,
   SlashCommandBuilder,
 } from "discord.js";
 import { localizationsFor } from "@modest/i18n";
@@ -17,6 +18,45 @@ import {
   incrementCaseCounter,
 } from "../repository.js";
 import { encodeId } from "../../../core/componentIds.js";
+import { COLORS } from "../../../core/reply.js";
+
+function getCfg(cfg: any, key: string, fallback: unknown): unknown {
+  if (!cfg) return fallback;
+  const value = cfg[key];
+  return value === undefined ? fallback : value;
+}
+
+function moderatorName(interaction: any, cfg: any): string {
+  const showName = getCfg(cfg, "dm.showModeratorName", true) !== false;
+  if (showName) {
+    return interaction.user.displayName ?? interaction.user.username ?? "a moderator";
+  }
+  return "a moderator";
+}
+
+async function sendDm(
+  ctx: CommandContext,
+  guild: any,
+  targetUser: any,
+  reason: string,
+  cfg: any,
+): Promise<void> {
+  const t = ctx.t as (key: string, params?: Record<string, unknown>) => string;
+  const embed = new EmbedBuilder()
+    .setTitle(t("moderation:softban:dm.title"))
+    .setDescription(t("moderation:softban:dm.body", {
+      guild: guild?.name ?? "this server",
+      reason,
+      moderator: moderatorName(ctx.interaction as any, cfg),
+    }))
+    .setColor(COLORS.moderation.ban)
+    .setTimestamp();
+  try {
+    await targetUser.send({ embeds: [embed] });
+  } catch {
+    // DMs may be closed; a softban removes the user from the server so we always DM first.
+  }
+}
 
 export const softbanCommand: BotCommand = {
   data: new SlashCommandBuilder()
@@ -111,6 +151,9 @@ export const softbanCommand: BotCommand = {
     });
 
     const caseNumber = await service.deps.incrementCaseCounter(guildId);
+
+    // §10.3 Step 3: DM BEFORE the action — a softban removes the user from the server.
+    await sendDm(ctx, guild, targetUser, cleanReason, cfg);
 
     try {
       await guild.bans.create(targetId, { deleteMessageSeconds: 86400, reason: cleanReason });
